@@ -1,0 +1,590 @@
+
+<!-- saved from url=(0159)file:///Users/bk280625/Obsidian_UQAM25/8.0%20Aux%20Recherche%20(ISC)/plateforme/%F0%9F%93%96%20Guide%20d'installation%20-%20Plateforme%20vide%CC%81o%20ISC.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body>---
+tags:
+  - gestion-des-secrets
+  - plateforme-render
+  - mot-de-passe-admin
+  - configuration-deploiement
+  - securite/donnees-sensibles
+  - documentation
+  - password-management
+  - security-best-practices
+  - configuration/variables-environnement
+  - sécurité/authentification
+'Date:': 2025-11-05T00:00:00.000Z
+'Authors:': Dominique Loyer
+labels: Site Config
+---
+**ℹ️ Comment changer (Recommended):**
+1. Render Dashboard → Settings → Environment Variables
+2. Add: Key=`ADMIN_PASSWORD`, Value=VotreMotDePasse
+3. Save
+**Le mot de passe n'est jamais dans le code!**
+
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 Guide d'installation - Plateforme vidéo ISC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 1.5em;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        p, li {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .step h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            color: #155724;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            color: #0c5460;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            margin-left: 40px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .timeline-item strong {
+            color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .footer {
+            border-top: 1px solid #ddd;
+            margin-top: 50px;
+            padding-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+
+
+    <div class="container">
+        <h1>🚀 Guide d'installation complet - Plateforme vidéo ISC</h1>
+
+        <div class="success">
+            <strong>✅ Temps estimé:</strong> 1 heure du début à la fin
+        </div>
+
+        <h2>Vue d'ensemble de l'architecture</h2>
+        <p>Votre application fonctionnera selon ce schéma:</p>
+        <div class="step">
+            <p><strong>Utilisateurs finaux</strong></p>
+            <p>↓</p>
+            <p><strong>WordPress (plateforme-isc.uqam.ca)</strong> - Vitrine institutionnelle</p>
+            <p>↓ (Bouton de redirection)</p>
+            <p><strong>Render (app.onrender.com)</strong> - Application vidéo complète</p>
+            <p>↓</p>
+            <p><strong>Base de données JSON</strong> - Stockage vidéos</p>
+        </div>
+
+        <h2>Phase 1: Préparation locale (15 minutes)</h2>
+
+        <h3>Étape 1.1: Créer la structure des dossiers</h3>
+        <p>Sur votre ordinateur, créez cette structure exacte:</p>
+        <pre>isc-video-platform/
+├── backend_server.js
+├── package.json
+├── public/
+│   └── index.html
+└── .gitignore
+        </pre>
+
+        <div class="step">
+            <h4>📁 Instructions</h4>
+            <ol>
+                <li>Ouvrez votre terminal/console</li>
+                <li>Exécutez: <code>mkdir isc-video-platform</code></li>
+                <li>Entrez dans le dossier: <code>cd isc-video-platform</code></li>
+                <li>Créez le sous-dossier: <code>mkdir public</code></li>
+            </ol>
+        </div>
+
+        <h3>Étape 1.2: Copier les fichiers corrigés</h3>
+        <p>Placez les fichiers fournis exactement ici:</p>
+        <table>
+            <tbody><tr>
+                <th>Fichier</th>
+                <th>Destination</th>
+            </tr>
+            <tr>
+                <td><code>backend_server.js</code></td>
+                <td>À la racine (isc-video-platform/)</td>
+            </tr>
+            <tr>
+                <td><code>package.json</code></td>
+                <td>À la racine (isc-video-platform/)</td>
+            </tr>
+            <tr>
+                <td><code>index.html</code></td>
+                <td>Dans le dossier public (isc-video-platform/public/)</td>
+            </tr>
+        </tbody></table>
+
+        <h3>Étape 1.3: Créer le fichier .gitignore</h3>
+        <p>Créez un fichier nommé <code>.gitignore</code> à la racine du projet avec ce contenu:</p>
+        <pre>node_modules/
+data/
+db.json
+.env
+.DS_Store
+*.log
+        </pre>
+
+        <h3>Étape 1.4: Tester en local</h3>
+        <div class="step">
+            <h4>✅ Test local</h4>
+            <p>Dans votre terminal, exécutez:</p>
+            <pre>npm install
+npm start
+            </pre>
+            <p>Ensuite, ouvrez votre navigateur et allez à: <code>http://localhost:3000</code></p>
+            <p>Vous devriez voir le formulaire d'ajout de vidéos ✅</p>
+        </div>
+
+        <div class="warning">
+            ⚠️ <strong>Important:</strong> Si vous voyez une erreur, vérifiez que tous les fichiers sont aux bons endroits (vérifiez les chemins ci-dessus)
+        </div>
+
+        <h2>Phase 2: Pousser sur GitHub (15 minutes)</h2>
+
+        <h3>Étape 2.1: Initialiser Git</h3>
+        <p>Dans votre terminal (dans le dossier isc-video-platform), exécutez:</p>
+        <pre>git init
+git add .
+git commit -m "Version initiale de la plateforme vidéo"
+        </pre>
+
+        <h3>Étape 2.2: Créer un repository sur GitHub</h3>
+        <ol>
+            <li>Allez sur <a href="https://github.com/" target="_blank">github.com</a></li>
+            <li>Connectez-vous avec votre compte</li>
+            <li>Cliquez sur le <span class="highlight">+</span> en haut à droite → <strong>New repository</strong></li>
+            <li>Remplissez:
+                <ul>
+                    <li><strong>Repository name:</strong> <code>isc-video-platform</code></li>
+                    <li><strong>Visibility:</strong> Public (important pour Render)</li>
+                </ul>
+            </li>
+            <li>Laissez les autres options vides (pas de README, gitignore, ou license)</li>
+            <li>Cliquez <strong>Create repository</strong></li>
+        </ol>
+
+        <h3>Étape 2.3: Lier GitHub à votre projet local</h3>
+        <p>GitHub vous affichera des commandes. Copiez-les et exécutez-les dans votre terminal:</p>
+        <pre>git remote add origin https://github.com/VOTRE_USERNAME/isc-video-platform.git
+git branch -M main
+git push -u origin main
+        </pre>
+        <p><span class="highlight">Remplacez VOTRE_USERNAME par votre username GitHub réel</span></p>
+
+        <div class="success">
+            ✅ Après cette étape, vos fichiers seront visibles sur GitHub!
+        </div>
+
+        <h2>Phase 3: Déployer sur Render (20 minutes)</h2>
+
+        <h3>Étape 3.1: Créer un compte Render</h3>
+        <ol>
+            <li>Allez sur <a href="https://render.com/" target="_blank">render.com</a></li>
+            <li>Cliquez <strong>Get Started For Free</strong></li>
+            <li>Connectez-vous avec votre compte GitHub (autorisez Render)</li>
+        </ol>
+
+        <h3>Étape 3.2: Créer un Web Service</h3>
+        <ol>
+            <li>Dans le tableau de bord Render, cliquez <strong>+ New</strong></li>
+            <li>Sélectionnez <strong>Web Service</strong></li>
+            <li>Recherchez votre repository <code>isc-video-platform</code> dans la liste</li>
+            <li>Cliquez <strong>Connect</strong></li>
+        </ol>
+
+        <h3>Étape 3.3: Configurer le déploiement</h3>
+        <p>Remplissez les champs exactement comme suit:</p>
+        <table>
+            <tbody><tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td><code>isc-video-platform</code></td>
+            </tr>
+            <tr>
+                <td><strong>Environment</strong></td>
+                <td><code>Node</code></td>
+            </tr>
+            <tr>
+                <td><strong>Region</strong></td>
+                <td><code>N. Virginia (USA)</code></td>
+            </tr>
+            <tr>
+                <td><strong>Branch</strong></td>
+                <td><code>main</code></td>
+            </tr>
+            <tr>
+                <td><strong>Build Command</strong></td>
+                <td><code>npm install</code></td>
+            </tr>
+            <tr>
+                <td><strong>Start Command</strong></td>
+                <td><code>npm start</code></td>
+            </tr>
+            <tr>
+                <td><strong>Instance Type</strong></td>
+                <td><strong>Free</strong></td>
+            </tr>
+        </tbody></table>
+
+        <h3>Étape 3.4: Créer le service</h3>
+        <ol>
+            <li>Vérifiez que <strong>Free</strong> est sélectionné</li>
+            <li>Cliquez <strong>Create Web Service</strong></li>
+            <li>Attendez 2-3 minutes que Render déploie votre application</li>
+        </ol>
+
+        <div class="info">
+            ℹ️ <strong>Info:</strong> Vous verrez une URL générer comme <code>https://isc-video-platform.onrender.com</code>
+        </div>
+
+        <h3>Étape 3.5: Tester votre application</h3>
+        <ol>
+            <li>Copiez l'URL fournie par Render</li>
+            <li>Ouvrez-la dans votre navigateur</li>
+            <li>Vous devriez voir le formulaire d'ajout de vidéos ✅</li>
+            <li>Essayez d'ajouter une vidéo YouTube: <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ</code></li>
+            <li>Vérifiez que la vidéo apparaît dans la liste ✅</li>
+        </ol>
+
+        <div class="warning">
+            ⚠️ <strong>Note:</strong> Le premier chargement peut prendre 5-10 secondes (c'est normal avec le plan Free)
+        </div>
+
+        <h2>Phase 4: Intégrer avec WordPress (10 minutes)</h2>
+
+        <h3>Étape 4.1: Créer une page WordPress</h3>
+        <ol>
+            <li>Connectez-vous à WordPress: <code>plateforme-isc.uqam.ca/wp-admin</code></li>
+            <li>Allez à <strong>Pages → Ajouter</strong></li>
+            <li>Titre: <strong>Plateforme vidéos</strong></li>
+            <li>Slug (URL): <strong>videos-isc</strong></li>
+        </ol>
+
+        <h3>Étape 4.2: Ajouter le bouton de redirection</h3>
+        <p><strong>Méthode recommandée (simple):</strong></p>
+        <ol>
+            <li>Dans l'éditeur, cliquez sur <strong>+</strong> pour ajouter un bloc</li>
+            <li>Cherchez <strong>Bouton</strong></li>
+            <li>Entrez le texte: <code>🎬 Accéder à la plateforme</code></li>
+            <li>Entrez l'URL: <code>https://isc-video-platform.onrender.com</code> (remplacez par votre URL Render)</li>
+            <li>Choisissez un style (couleur bleue recommandée)</li>
+        </ol>
+
+        <h3>Étape 4.3: Publier</h3>
+        <ol>
+            <li>Cliquez <strong>Publier</strong></li>
+            <li>Visitez la page: <code>plateforme-isc.uqam.ca/videos-isc</code></li>
+            <li>Testez le bouton - vous devriez être redirigé vers Render ✅</li>
+        </ol>
+
+        <h2>Phase 5: Test complet (10 minutes)</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <strong>Test 1:</strong> Accès depuis WordPress
+                <ol>
+                    <li>Allez sur la page WordPress: <code>plateforme-isc.uqam.ca/videos-isc</code></li>
+                    <li>Cliquez le bouton</li>
+                    <li>Vérifiez que vous arrivez sur Render ✅</li>
+                </ol>
+            </div>
+
+            <div class="timeline-item">
+                <strong>Test 2:</strong> Ajouter une vidéo
+                <ol>
+                    <li>URL: <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ</code></li>
+                    <li>Annotation: <code>Vidéo de test</code></li>
+                    <li>Cliquez <strong>Ajouter la vidéo</strong></li>
+                    <li>Vérifiez le message de succès ✅</li>
+                    <li>Vérifiez que la vidéo apparaît dans la liste ✅</li>
+                </ol>
+            </div>
+
+            <div class="timeline-item">
+                <strong>Test 3:</strong> Fonctionnalités
+                <ul>
+                    <li>Recherche fonctionne-t-elle?</li>
+                    <li>Suppression d'une vidéo fonctionne-t-elle?</li>
+                    <li>L'interface est-elle responsive (testez sur téléphone)?</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Phase 6: Mise à jour du code (Pour l'avenir)</h2>
+
+        <p>Quand vous modifiez votre code localement:</p>
+        <pre># Faire vos modifications aux fichiers...
+
+# Tester en local
+npm start
+
+# Envoyer sur GitHub
+git add .
+git commit -m "Description du changement"
+git push origin main
+
+# ✅ Render se redéploie automatiquement en 2-3 minutes!
+        </pre>
+
+        <h2>Problèmes courants et solutions</h2>
+
+        <h3>❌ L'app ne démarre pas sur Render</h3>
+        <div class="step">
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Allez sur le dashboard Render</li>
+                <li>Services → isc-video-platform → Logs</li>
+                <li>Cherchez les erreurs en rouge</li>
+                <li>Vérifiez que <code>npm start</code> fonctionne en local</li>
+                <li>Vérifiez que package.json est à la racine</li>
+            </ol>
+        </div>
+
+        <h3>❌ Les vidéos ne s'affichent pas</h3>
+        <div class="step">
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Vérifiez la structure des dossiers (voir Phase 1)</li>
+                <li><code>public/index.html</code> doit exister</li>
+                <li>Pas de <code>index.html</code> à la racine</li>
+                <li>Regardez les logs du navigateur (F12 → Console)</li>
+            </ol>
+        </div>
+
+        <h3>❌ Le bouton WordPress ne fonctionne pas</h3>
+        <div class="step">
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Vérifiez l'URL Render (commence par https://)</li>
+                <li>Testez l'URL directement dans un onglet</li>
+                <li>Vérifiez que l'app Render est "Live" (pas en erreur)</li>
+            </ol>
+        </div>
+
+        <h2>Récapitulatif final</h2>
+
+        <div class="success">
+            <strong>✅ Quand tout fonctionne, vous aurez:</strong>
+            <ul>
+                <li>Une application sur Render (URL: https://isc-video-platform.onrender.com)</li>
+                <li>Une page WordPress avec un bouton de redirection</li>
+                <li>La possibilité d'ajouter des vidéos YouTube</li>
+                <li>Une base de données persistante (JSON)</li>
+                <li>Zéro coût d'hébergement</li>
+                <li>Déploiement automatique (push → live en 2-3 min)</li>
+            </ul>
+        </div>
+
+        <h2>Questions fréquentes</h2>
+
+        <h3>Q: Dois-je utiliser GitHub?</h3>
+        <p>R: Oui, c'est la façon la plus simple de déployer sur Render. C'est aussi une bonne pratique (versioning, backup).</p>
+
+        <h3>Q: WordPress est-il obligatoire?</h3>
+        <p>R: Non. Vous pouvez utiliser l'app Render directement. WordPress ajoute juste une vitrine institutionnelle.</p>
+
+        <h3>Q: Combien ça coûte?</h3>
+        <p>R: Complètement gratuit! GitHub gratuit + Render gratuit + WordPress existant.</p>
+
+        <h3>Q: Les données vont-elles disparaître?</h3>
+        <p>R: Non. Avec Render Free, elles persistent indéfiniment. Après 3 mois d'inactivité, elles peuvent être réinitialisées (upgrade à Paid pour éviter cela).</p>
+
+        <h3>Q: Je dois relancer manuellement après chaque modification?</h3>
+        <p>R: Non! Avec GitHub, vous poussez et Render redéploie automatiquement.</p>
+
+        <div class="footer">
+            <p>📖 Guide d'installation - Plateforme vidéo ISC</p>
+            <p>Dernière mise à jour: 4 novembre 2025</p>
+        </div>
+    </div>
+
+
+</body></html>

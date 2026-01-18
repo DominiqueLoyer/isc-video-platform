@@ -1,0 +1,19 @@
+{
+  "name": "isc-video-platform",
+  "version": "1.0.0",
+  "description": "Plateforme vidéo YouTube avec annotations - ISC UQAM",
+  "type": "module",
+  "main": "backend_server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node backend_server.js",
+    "dev": "node backend_server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "axios": "^1.7.2"
+  }
+}

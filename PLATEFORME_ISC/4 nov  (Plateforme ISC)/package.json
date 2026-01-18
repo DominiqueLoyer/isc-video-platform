@@ -1,0 +1,16 @@
+{
+  "name": "isc-backend-server",
+  "version": "1.0.0",
+  "description": "Serveur backend pour la plateforme vidéo ISC.",
+  "type": "module",
+  "main": "backend_server.js",
+  "scripts": {
+    "start": "node backend_server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "axios": "^1.7.2",
+    "pg": "^8.12.0"
+  }
+}

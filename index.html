@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateforme ISC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root { --uqam-dark-blue: #003366; --uqam-light-blue: #337ab7; }
+        body { font-family: 'Inter', sans-serif; background-color: #f0f0f0; }
+        .header-bg { background-color: var(--uqam-dark-blue); }
+        .btn-primary { background-color: var(--uqam-light-blue); color: white; }
+        .btn-primary:hover { background-color: #286090; }
+        .video-card { background-color: white; border: 1px solid #ccc; transition: all 0.2s; }
+        .video-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="header-bg text-white p-4">
+        <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <a href="#" onclick="showHomePage(); return false;" class="text-2xl font-bold">Plateforme ISC</a>
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <input type="search" id="searchInput" placeholder="Rechercher..." class="border-2 p-2 w-64 rounded text-gray-800">
+                <select id="keywordFilter" class="border-2 p-2 rounded text-gray-800">
+                    <option value="">Filtrer...</option>
+                </select>
+                <button id="adminLoginButton" class="btn-primary px-4 py-2 rounded">Admin</button>
+                <button id="addYoutubeVideoBtn" class="btn-primary px-4 py-2 rounded hidden"><i class="fab fa-youtube"></i> Ajouter</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContent" class="container mx-auto p-4">
+        <section id="videoGridPage">
+            <h2 class="text-2xl font-semibold mb-6">Vidéos disponibles</h2>
+            <div id="videoGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            <div class="text-center mt-8">
+                <button id="viewMoreButton" class="btn-primary px-6 py-2 rounded">Voir Toutes</button>
+            </div>
+        </section>
+
+        <section id="videoPlayerPage" class="hidden">
+            <div class="max-w-4xl mx-auto">
+                <button onclick="showHomePage(); return false;" class="btn-primary mb-4 px-4 py-2 rounded"><i class="fas fa-arrow-left"></i> Retour</button>
+                <div class="bg-black rounded-lg shadow-xl mb-4">
+                    <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 id="videoTitleElem" class="text-3xl font-bold mb-2"></h2>
+                    <p id="videoUploader" class="text-gray-600 mb-1">Par: <span class="font-semibold"></span></p>
+                    <p id="videoViews" class="text-gray-600 mb-4">Vues: <span class="font-semibold"></span></p>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-3 border-b-2 pb-1">Résumé IA</h3>
+                        <p id="videoAiSummary" class="text-gray-700"></p>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-3 border-b-2 pb-1">Mots-clés</h3>
+                        <div id="videoKeywordsContainer" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-3 border-b-2 pb-1">Annotation Admin</h3>
+                        <p id="videoAdminAnnotation" class="bg-blue-50 p-4 border-l-4 border-blue-400 rounded"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <p id="modalMessageText"></p>
+            <button id="modalCloseButton" class="btn-primary mt-4 px-4 py-2 rounded">OK</button>
+        </div>
+    </div>
+
+    <div id="adminLoginModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold mb-4">Accès Administrateur</h3>
+            <input type="password" id="adminPassword" placeholder="Mot de passe" class="w-full border p-2 rounded mb-4">
+            <div class="flex justify-end gap-2">
+                <button id="submitAdminLogin" class="btn-primary px-4 py-2 rounded">Connecter</button>
+                <button id="closeAdminLoginModal" class="bg-gray-300 px-4 py-2 rounded">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addYoutubeVideoModal" class="modal-overlay hidden">
+        <div class="modal-content max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-semibold mb-4">Ajouter Vidéo YouTube</h3>
+            <input type="text" id="youtubeVideoUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full border p-2 rounded mb-4">
+            <textarea id="adminCustomDescription" placeholder="Annotation personnelle..." class="w-full border p-2 rounded mb-4 h-24"></textarea>
+            <div class="flex justify-end gap-2">
+                <button id="saveYoutubeVideoBtn" class="btn-primary px-4 py-2 rounded">Sauvegarder</button>
+                <button id="closeAddYoutubeVideoModal" class="bg-gray-300 px-4 py-2 rounded">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin === 'file://' ? 'http://localhost:3000' : window.location.origin;
+        let isAdmin = false;
+        let adminToken = null;
+        let allVideos = [];
+        const initialDisplayCount = 6;
+        let showingAllVideos = false;
+
+        function showModal(el) { el.classList.remove('hidden'); }
+        function hideModal(el) { el.classList.add('hidden'); }
+        function showUserMessage(msg) {
+            document.getElementById('modalMessageText').innerText = msg;
+            showModal(document.getElementById('messageModal'));
+        }
+
+        function getYouTubeVideoId(url) {
+            const patterns = [
+                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+                /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+            return null;
+        }
+
+        async function fetchVideos() {
+            try {
+                const response = await fetch(`${API_BASE}/api/videos`);
+                if (!response.ok) throw new Error('Erreur réseau');
+                allVideos = await response.json();
+                updateKeywordFilter();
+                filterAndDisplayVideos();
+            } catch (err) {
+                console.error('Erreur fetchVideos:', err);
+                showUserMessage('Erreur lors du chargement des vidéos');
+            }
+        }
+
+        async function loginAdmin(password) {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                if (!response.ok) throw new Error('Mot de passe incorrect');
+                const { token } = await response.json();
+                adminToken = token;
+                return true;
+            } catch (err) {
+                showUserMessage('Erreur: ' + err.message);
+                return false;
+            }
+        }
+
+        async function addVideo(youtubeId, annotation) {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/videos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ youtubeVideoId: youtubeId, adminAnnotation: annotation })
+                });
+                if (!response.ok) throw new Error('Erreur ajout vidéo');
+                showUserMessage('Vidéo ajoutée avec succès');
+                hideModal(document.getElementById('addYoutubeVideoModal'));
+                await fetchVideos();
+            } catch (err) {
+                showUserMessage('Erreur: ' + err.message);
+            }
+        }
+
+        async function deleteVideo(videoId) {
+            if (!confirm('Êtes-vous sûr?')) return;
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/videos/${videoId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (!response.ok) throw new Error('Erreur suppression');
+                showUserMessage('Vidéo supprimée');
+                await fetchVideos();
+            } catch (err) {
+                showUserMessage('Erreur: ' + err.message);
+            }
+        }
+
+        function updateKeywordFilter() {
+            const allKeywords = new Set();
+            allVideos.forEach(video => {
+                (video.keywords || []).forEach(kw => allKeywords.add(kw));
+            });
+            const keywordSelect = document.getElementById('keywordFilter');
+            keywordSelect.innerHTML = '<option value="">Filtrer par mot-clé...</option>';
+            Array.from(allKeywords).sort().forEach(kw => {
+                const option = document.createElement('option');
+                option.value = kw;
+                option.textContent = kw;
+                keywordSelect.appendChild(option);
+            });
+        }
+
+        function filterAndDisplayVideos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedKeyword = document.getElementById('keywordFilter').value;
+
+            const filtered = allVideos.filter(video => {
+                const matchesSearch = !searchTerm || video.title.toLowerCase().includes(searchTerm) || (video.ai_summary || '').toLowerCase().includes(searchTerm);
+                const matchesKeyword = !selectedKeyword || (video.keywords || []).includes(selectedKeyword);
+                return matchesSearch && matchesKeyword;
+            });
+
+            displayVideos(filtered);
+        }
+
+        function displayVideos(videos) {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+            const toShow = showingAllVideos ? videos : videos.slice(0, initialDisplayCount);
+
+            if (toShow.length === 0) {
+                videoGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">Aucune vidéo.</p>';
+                document.getElementById('viewMoreButton').classList.add('hidden');
+                return;
+            }
+
+            toShow.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card rounded-lg shadow-lg overflow-hidden flex flex-col';
+                
+                const thumbnailUrl = video.thumbnail_url || `https://images.weserv.nl/?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2F${video.youtube_video_id}%2Fhqdefault.jpg&w=400`;
+                const keywordsHtml = (video.keywords || []).slice(0, 5).map(kw => `<span class="bg-gray-200 px-2 py-1 rounded text-xs">${kw}</span>`).join('');
+
+                card.innerHTML = `
+                    <div class="w-full h-48 bg-gray-300 overflow-hidden">
+                        <img src="${thumbnailUrl}" alt="${video.title}" class="w-full h-full object-cover" loading="lazy">
+                    </div>
+                    <div class="p-4 flex-grow flex flex-col">
+                        <h3 class="font-semibold text-lg mb-1 truncate">${video.title}</h3>
+                        <p class="text-gray-600 text-sm mb-2">${video.uploader} • ${video.views?.toLocaleString() || 0} vues</p>
+                        <p class="text-gray-700 text-sm mb-3 line-clamp-3">${video.ai_summary || ''}</p>
+                        <div class="mb-3 flex flex-wrap gap-1">${keywordsHtml}</div>
+                        ${isAdmin ? `<div class="mt-auto pt-2 flex gap-2">
+                            <button class="delete-video-btn text-xs text-red-600" data-id="${video.id}"><i class="fas fa-trash"></i> Suppr.</button>
+                        </div>` : ''}
+                    </div>
+                `;
+
+                card.addEventListener('click', () => showVideoPlayer(video));
+                if (isAdmin) {
+                    card.querySelector('.delete-video-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteVideo(video.id);
+                    });
+                }
+                videoGrid.appendChild(card);
+            });
+
+            if (videos.length > initialDisplayCount) {
+                document.getElementById('viewMoreButton').classList.remove('hidden');
+                document.getElementById('viewMoreButton').textContent = showingAllVideos ? 'Voir Moins' : `Voir Toutes (${videos.length})`;
+            } else {
+                document.getElementById('viewMoreButton').classList.add('hidden');
+            }
+        }
+
+        function showVideoPlayer(video) {
+            document.getElementById('videoGridPage').classList.add('hidden');
+            document.getElementById('videoPlayerPage').classList.remove('hidden');
+            
+            const iframe = document.getElementById('mainVideoPlayerIframe');
+            iframe.src = `https://www.youtube.com/embed/${video.youtube_video_id}?autoplay=1&rel=0`;
+            
+            document.getElementById('videoTitleElem').textContent = video.title;
+            document.getElementById('videoUploader').querySelector('span').textContent = video.uploader || 'ISC';
+            document.getElementById('videoViews').querySelector('span').textContent = (video.views || 0).toLocaleString();
+            document.getElementById('videoAiSummary').textContent = video.ai_summary || 'Aucun résumé';
+            document.getElementById('videoAdminAnnotation').textContent = video.admin_annotation || 'Aucune annotation';
+            
+            const keywordsContainer = document.getElementById('videoKeywordsContainer');
+            keywordsContainer.innerHTML = (video.keywords || []).map(kw => `<span class="bg-blue-500 text-white px-3 py-1 rounded">${kw}</span>`).join('') || 'Aucun mot-clé';
+
+            window.scrollTo(0, 0);
+        }
+
+        function showHomePage() {
+            document.getElementById('videoPlayerPage').classList.add('hidden');
+            document.getElementById('videoGridPage').classList.remove('hidden');
+            document.getElementById('mainVideoPlayerIframe').src = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('keywordFilter').value = '';
+            showingAllVideos = false;
+            filterAndDisplayVideos();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterAndDisplayVideos);
+        document.getElementById('keywordFilter').addEventListener('change', filterAndDisplayVideos);
+        document.getElementById('viewMoreButton').addEventListener('click', () => {
+            showingAllVideos = !showingAllVideos;
+            filterAndDisplayVideos();
+        });
+
+        document.getElementById('adminLoginButton').addEventListener('click', async () => {
+            if (isAdmin) {
+                isAdmin = false;
+                adminToken = null;
+                document.getElementById('adminLoginButton').textContent = 'Admin';
+                document.getElementById('addYoutubeVideoBtn').classList.add('hidden');
+                filterAndDisplayVideos();
+                showUserMessage('Déconnecté');
+            } else {
+                showModal(document.getElementById('adminLoginModal'));
+            }
+        });
+
+        document.getElementById('submitAdminLogin').addEventListener('click', async () => {
+            const password = document.getElementById('adminPassword').value;
+            if (await loginAdmin(password)) {
+                isAdmin = true;
+                document.getElementById('adminLoginButton').textContent = 'Déconnecter';
+                document.getElementById('addYoutubeVideoBtn').classList.remove('hidden');
+                hideModal(document.getElementById('adminLoginModal'));
+                document.getElementById('adminPassword').value = '';
+                filterAndDisplayVideos();
+                showUserMessage('Connecté en tant qu\'administrateur');
+            }
+        });
+
+        document.getElementById('closeAdminLoginModal').addEventListener('click', () => {
+            hideModal(document.getElementById('adminLoginModal'));
+        });
+
+        document.getElementById('addYoutubeVideoBtn').addEventListener('click', () => {
+            document.getElementById('youtubeVideoUrl').value = '';
+            document.getElementById('adminCustomDescription').value = '';
+            showModal(document.getElementById('addYoutubeVideoModal'));
+        });
+
+        document.getElementById('saveYoutubeVideoBtn').addEventListener('click', async () => {
+            const url = document.getElementById('youtubeVideoUrl').value;
+            const youtubeId = getYouTubeVideoId(url);
+            if (!youtubeId) {
+                showUserMessage('URL YouTube invalide');
+                return;
+            }
+            const annotation = document.getElementById('adminCustomDescription').value;
+            await addVideo(youtubeId, annotation);
+        });
+
+        document.getElementById('closeAddYoutubeVideoModal').addEventListener('click', () => {
+            hideModal(document.getElementById('addYoutubeVideoModal'));
+        });
+
+        document.getElementById('modalCloseButton').addEventListener('click', () => {
+            hideModal(document.getElementById('messageModal'));
+        });
+
+        fetchVideos();
+    </script>
+</body>
+</html>
