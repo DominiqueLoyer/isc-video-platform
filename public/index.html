@@ -136,6 +136,44 @@
             background-color: var(--uqam-light-blue);
         }
 
+        /* Styles pour les thématiques */
+        .theme-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            margin-top: 8px;
+        }
+
+        .theme-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .theme-filter:hover {
+            transform: translateY(-1px);
+        }
+
+        .theme-filter.active {
+            border-color: var(--uqam-dark-blue);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -336,6 +374,15 @@
     </header>
 
     <main id="mainContent" class="container mx-auto p-4">
+        <!-- Filtres par thématique -->
+        <section id="themeFilters" class="mb-6 overflow-x-auto">
+            <div id="themeFiltersContainer" class="flex gap-2 pb-2 flex-wrap">
+                <button class="theme-filter active" data-theme="all" style="background-color: #e5e7eb; color: #374151;">
+                    <i class="fas fa-th"></i> Toutes
+                </button>
+            </div>
+        </section>
+
         <section id="videoGridPage">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-semibold text-gray-700">Vidéos disponibles</h2>
@@ -523,6 +570,8 @@
         // ============================================
         let isAdmin = false;
         let currentVideos = [];
+        let allThemes = [];
+        let activeThemeFilter = 'all';
         const initialDisplayCount = 6;
         let showingAllVideos = false;
 
@@ -551,6 +600,7 @@
         const addYoutubeVideoModal = document.getElementById('addYoutubeVideoModal');
         const viewMoreButton = document.getElementById('viewMoreButton');
         const statusBadge = document.getElementById('statusBadge');
+        const themeFiltersContainer = document.getElementById('themeFiltersContainer');
 
         // ============================================
         // FONCTIONS UTILITAIRES
@@ -586,12 +636,23 @@
         // ============================================
         // SUPABASE - CHARGEMENT
         // ============================================
+        async function loadThemes() {
+            try {
+                const { data, error } = await supabaseClient.from('themes').select('*').order('name');
+                if (error) { console.error('Erreur themes:', error); return; }
+                allThemes = data || [];
+                renderThemeFilters();
+            } catch (e) {
+                console.error('Erreur chargement thèmes:', e);
+            }
+        }
+
         async function loadVideosFromSupabase() {
             updateStatus('loading', 'Chargement...');
             try {
                 const { data, error } = await supabaseClient
                     .from('videos')
-                    .select('*')
+                    .select('*, themes(id, name, color)')
                     .eq('is_published', true)
                     .order('created_at', { ascending: false });
 
@@ -607,7 +668,8 @@
                     aiSummary: v.ai_summary || 'Aucun résumé disponible.',
                     keywords: v.keywords || [],
                     adminDescription: v.admin_annotation || 'Aucune annotation.',
-                    originalDescription: v.original_description || 'Aucune description originale.'
+                    originalDescription: v.original_description || 'Aucune description originale.',
+                    theme: v.themes
                 }));
 
                 updateStatus('connected', `${currentVideos.length} vidéos`);
@@ -620,6 +682,36 @@
                 updateStatus('disconnected', 'Erreur');
                 showUserMessage('Erreur de connexion: ' + e.message);
             }
+        }
+
+        // ============================================
+        // THÉMATIQUES - FILTRES
+        // ============================================
+        function renderThemeFilters() {
+            themeFiltersContainer.innerHTML = `
+                <button class="theme-filter ${activeThemeFilter === 'all' ? 'active' : ''}" 
+                        data-theme="all" style="background-color: #e5e7eb; color: #374151;">
+                    <i class="fas fa-th"></i> Toutes
+                </button>
+            `;
+            allThemes.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = `theme-filter ${activeThemeFilter === t.id ? 'active' : ''}`;
+                btn.dataset.theme = t.id;
+                btn.style.backgroundColor = t.color + '20';
+                btn.style.color = t.color;
+                btn.innerHTML = `<span class="theme-dot" style="background-color:${t.color}"></span>${t.name}`;
+                themeFiltersContainer.appendChild(btn);
+            });
+            document.querySelectorAll('.theme-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeThemeFilter = btn.dataset.theme;
+                    document.querySelectorAll('.theme-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showingAllVideos = false;
+                    filterAndDisplayVideos();
+                });
+            });
         }
 
         // ============================================
@@ -656,7 +748,8 @@
                     v.keywords.some(kw => kw.toLowerCase().includes(searchTerm))
                 );
                 const matchesKeyword = !selectedKeyword || v.keywords.includes(selectedKeyword);
-                return matchesSearch && matchesKeyword;
+                const matchesTheme = activeThemeFilter === 'all' || v.theme?.id === activeThemeFilter;
+                return matchesSearch && matchesKeyword && matchesTheme;
             });
 
             displayVideos(filtered);
@@ -678,6 +771,7 @@
 
                 const thumbnailUrl = getThumbnailUrl(v.youtubeVideoId);
                 const keywordsHtml = v.keywords.slice(0, 5).map(kw => `<span class="keyword-tag">${kw}</span>`).join('');
+                const themeBadgeHtml = v.theme ? `<span class="theme-badge" style="background-color:${v.theme.color}">${v.theme.name}</span>` : '';
 
                 card.innerHTML = `
                     <div class="video-thumbnail-container">
@@ -686,6 +780,7 @@
                     <div class="p-4 flex-grow flex flex-col">
                         <h3 class="font-semibold text-lg mb-1 truncate" title="${v.title}">${v.title}</h3>
                         <p class="text-gray-600 text-sm mb-2">${v.uploader} • ${v.views} vues</p>
+                        ${themeBadgeHtml}
                         <p class="text-gray-700 text-sm mb-3 line-clamp-3" title="${v.aiSummary}">${v.aiSummary}</p>
                         <div class="mb-3 flex flex-wrap">${keywordsHtml}</div>
                         <div class="mt-auto pt-2 flex items-center ${isAdmin ? '' : 'hidden'}">
@@ -923,8 +1018,9 @@
         keywordFilter.addEventListener('change', filterAndDisplayVideos);
         modalCloseButton.addEventListener('click', () => hideModal(messageModal));
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadVideosFromSupabase();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadThemes();
+            await loadVideosFromSupabase();
         });
     </script>
 </body>
