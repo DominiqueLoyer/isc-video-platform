@@ -96,24 +96,40 @@
             background-color: #1877F2;
         }
 
-        .share-twitter {
-            background-color: #1DA1F2;
+        .share-x {
+            background-color: #000000;
         }
 
         .share-linkedin {
             background-color: #0A66C2;
         }
 
-        .share-whatsapp {
-            background-color: #25D366;
+        .share-reddit {
+            background-color: #FF4500;
         }
 
-        .share-telegram {
-            background-color: #0088cc;
+        .share-bluesky {
+            background-color: #1185FE;
         }
 
-        .share-email {
-            background-color: #EA4335;
+        .share-discord {
+            background-color: #5865F2;
+        }
+
+        .share-obsidian {
+            background-color: #7C3AED;
+        }
+
+        .share-notion {
+            background-color: #000000;
+        }
+
+        .share-instagram {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .share-tiktok {
+            background-color: #000000;
         }
 
         .share-copy {
@@ -379,18 +395,30 @@
                     <div class="border-t pt-4">
                         <h3 class="text-lg font-semibold mb-3 text-gray-700">Partager :</h3>
                         <div id="shareButtonsContainer" class="flex flex-wrap">
-                            <a href="#" id="shareFacebook" target="_blank" class="share-button share-facebook"><i
-                                    class="fab fa-facebook-f"></i> Facebook</a>
-                            <a href="#" id="shareTwitter" target="_blank" class="share-button share-twitter"><i
-                                    class="fab fa-twitter"></i> Twitter</a>
-                            <a href="#" id="shareLinkedIn" target="_blank" class="share-button share-linkedin"><i
-                                    class="fab fa-linkedin-in"></i> LinkedIn</a>
-                            <a href="#" id="shareWhatsApp" target="_blank" class="share-button share-whatsapp"><i
-                                    class="fab fa-whatsapp"></i> WhatsApp</a>
-                            <a href="#" id="shareTelegram" target="_blank" class="share-button share-telegram"><i
-                                    class="fab fa-telegram-plane"></i> Telegram</a>
-                            <a href="#" id="shareEmail" class="share-button share-email"><i class="fas fa-envelope"></i>
-                                Email</a>
+                            <a href="#" data-network="facebook" target="_blank"
+                                class="share-link share-button share-facebook"><i class="fab fa-facebook-f"></i>
+                                Facebook</a>
+                            <a href="#" data-network="x" target="_blank" class="share-link share-button share-x"><i
+                                    class="fab fa-x-twitter"></i> X</a>
+                            <a href="#" data-network="linkedin" target="_blank"
+                                class="share-link share-button share-linkedin"><i class="fab fa-linkedin-in"></i>
+                                LinkedIn</a>
+                            <a href="#" data-network="reddit" target="_blank"
+                                class="share-link share-button share-reddit"><i class="fab fa-reddit-alien"></i>
+                                Reddit</a>
+                            <a href="#" data-network="bluesky" target="_blank"
+                                class="share-link share-button share-bluesky"><i class="fas fa-cloud"></i> Bluesky</a>
+                            <a href="#" data-network="discord" target="_blank"
+                                class="share-link share-button share-discord"><i class="fab fa-discord"></i> Discord</a>
+                            <a href="#" data-network="obsidian" target="_blank"
+                                class="share-link share-button share-obsidian"><i class="fas fa-gem"></i> Obsidian</a>
+                            <a href="#" data-network="notion" target="_blank"
+                                class="share-link share-button share-notion"><i class="fas fa-file-alt"></i> Notion</a>
+                            <a href="#" data-network="instagram" target="_blank"
+                                class="share-link share-button share-instagram"><i class="fab fa-instagram"></i>
+                                Instagram</a>
+                            <a href="#" data-network="tiktok" target="_blank"
+                                class="share-link share-button share-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
                             <button id="copyLinkButton" class="share-button share-copy"><i class="fas fa-link"></i>
                                 Copier lien</button>
                         </div>
@@ -401,7 +429,8 @@
     </main>
 
     <footer class="text-center p-4 mt-8 text-gray-600 border-t border-gray-300">
-        © 2025 Développement par Dominique S. Loyer, assistant de recherche ISC. Tous droits réservés.
+        Creation <img src="peace.png" alt="Peace" style="height: 24px; vertical-align: middle; display: inline-block;">
+        Dominique Loyer MMXXVI
     </footer>
 
     <div id="statusBadge" class="status-badge status-loading">
@@ -703,17 +732,29 @@
                 ? v.keywords.map(kw => `<span class="keyword-tag-detail">${kw}</span>`).join('')
                 : '<p class="text-gray-500">Aucun mot-clé.</p>';
 
-            // URLs de partage
+            // URLs de partage - Configuration des réseaux sociaux
             const pageUrl = encodeURIComponent(window.location.href.split('#')[0] + '#video=' + v.id);
-            const shareText = encodeURIComponent(v.title);
-            const youtubeUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${v.youtubeVideoId}`);
+            const pageTitle = encodeURIComponent(v.title);
 
-            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
-            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`;
-            document.getElementById('shareLinkedIn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
-            document.getElementById('shareWhatsApp').href = `https://wa.me/?text=${shareText}%20${pageUrl}`;
-            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${pageUrl}&text=${shareText}`;
-            document.getElementById('shareEmail').href = `mailto:?subject=${shareText}&body=Regardez%20cette%20vid%C3%A9o%3A%20${pageUrl}`;
+            const shareUrls = {
+                reddit: `https://www.reddit.com/submit?url=${pageUrl}&title=${pageTitle}`,
+                bluesky: `https://bsky.app/intent/compose?text=${pageTitle}%20${pageUrl}`,
+                linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`,
+                x: `https://x.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`,
+                facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+                discord: `https://discord.gg/PT4Nzkgw`,
+                obsidian: `obsidian://new?content=${pageTitle}%0A${pageUrl}`,
+                notion: `https://www.notion.so/new`,
+                instagram: `https://www.instagram.com/`,
+                tiktok: `https://www.tiktok.com/`
+            };
+
+            document.querySelectorAll('.share-link').forEach(link => {
+                const network = link.dataset.network;
+                if (shareUrls[network]) {
+                    link.href = shareUrls[network];
+                }
+            });
 
             document.getElementById('copyLinkButton').onclick = () => {
                 navigator.clipboard.writeText(decodeURIComponent(pageUrl));
