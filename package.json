@@ -2,10 +2,11 @@
   "name": "isc-video-platform",
   "version": "2.0.0",
   "description": "Plateforme vidéo ISC UQAM - Backend Node.js avec Supabase",
-  "main": "backend_server.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend_server.js",
-    "dev": "node --watch backend_server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "author": "ISC UQAM",
   "license": "MIT",
