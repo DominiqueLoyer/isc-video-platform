@@ -1,17 +1,5 @@
 /**
- * Plateforme Vidéo ISC - Backend API
- * Version 2.1 - Supabase Integration & Gemini JSON
- * 
- * Endpoints:
- * - GET  /api/videos          - Liste toutes les vidéos (avec filtres)
- * - GET  /api/videos/:id      - Détail d'une vidéo
- * - GET  /api/themes          - Liste des thématiques
- * - GET  /api/youtube-info/:videoId - Métadonnées YouTube
- * - POST /api/auth/login      - Connexion admin
- * - POST /api/admin/videos    - Ajouter une vidéo (admin)
- * - PUT  /api/admin/videos/:id - Modifier une vidéo (admin)
- * - DELETE /api/admin/videos/:id - Supprimer une vidéo (admin)
- * - POST /api/generate-summary - Résumé Gemini + Mots-clés
+ * Plateforme Vidéo ISC - Backend API (Version Stable Restaurée)
  */
 
 import express from 'express';
@@ -32,108 +20,54 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuration Supabase
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const SUPABASE_SECRET = process.env.SUPABASE_SECRET || process.env.SUPABASE_KEY;
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Vérification des variables d'environnement
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('❌ ERREUR: SUPABASE_URL et SUPABASE_KEY sont requis!');
-  console.error('Créez un fichier .env avec ces variables.');
+  console.error('ERREUR: SUPABASE_URL et SUPABASE_KEY requis.');
   process.exit(1);
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET);
 
-// Configuration CORS étendue
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5500',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:5500',
-  'https://isc-video-platform.onrender.com',
-  'https://plateforme-isc.uqam.ca',
-  'https://isc-2025.github.io'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    if (origin.endsWith('.uqam.ca')) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ============================================
-// MIDDLEWARE D'AUTHENTIFICATION
-// ============================================
-
+// Middleware Auth
 const verifyAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token manquant ou mal formaté' });
-  }
-
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Token manquant' });
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, SUPABASE_SECRET);
-    req.adminId = decoded.sub;
+    jwt.verify(token, SUPABASE_SECRET);
     next();
   } catch (err) {
-    console.error('Token invalide:', err.message);
-    return res.status(403).json({ error: 'Token invalide ou expiré' });
+    return res.status(403).json({ error: 'Token invalide' });
   }
 };
 
-// ============================================
-// ROUTES PUBLIQUES
-// ============================================
+// --- ROUTES ---
 
-/**
- * GET /api/videos
- * Liste toutes les vidéos avec filtres optionnels
- */
+// 1. Videos
 app.get('/api/videos', async (req, res) => {
   try {
-    let query = supabase
-      .from('videos')
-      .select(`
-        *,
-        themes (id, name, color)
-      `)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false });
+    let query = supabase.from('videos').select('*, themes(id, name, color)').eq('is_published', true).order('created_at', { ascending: false });
 
-    if (req.query.keyword) {
-      query = query.contains('keywords', [req.query.keyword]);
-    }
-
-    if (req.query.theme) {
-      query = query.eq('theme_id', req.query.theme);
-    }
-
+    if (req.query.keyword) query = query.contains('keywords', [req.query.keyword]);
+    if (req.query.theme) query = query.eq('theme_id', req.query.theme);
     if (req.query.search) {
-      const search = `%${req.query.search}%`;
-      query = query.or(`title.ilike.${search},uploader.ilike.${search},ai_summary.ilike.${search},admin_annotation.ilike.${search}`);
+      const s = `%${req.query.search}%`;
+      query = query.or(`title.ilike.${s},uploader.ilike.${s},ai_summary.ilike.${s}`);
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
 
-    const videos = (data || []).map(v => ({
+    const videos = data.map(v => ({
       id: v.id,
       youtubeVideoId: v.youtube_video_id,
       title: v.title,
@@ -144,440 +78,116 @@ app.get('/api/videos', async (req, res) => {
       originalDescription: v.original_description,
       adminDescription: v.admin_annotation,
       keywords: v.keywords || [],
-      theme: v.themes ? { id: v.themes.id, name: v.themes.name, color: v.themes.color } : null,
+      theme: v.themes,
       thumbnailUrl: v.thumbnail_url,
       createdAt: v.created_at
     }));
-
     res.json(videos);
-  } catch (err) {
-    console.error('Erreur GET /api/videos:', err);
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-/**
- * GET /api/videos/:id
- * Détail d'une vidéo spécifique
- */
-app.get('/api/videos/:id', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('videos')
-      .select(`
-        *,
-        themes (id, name, color)
-      `)
-      .eq('id', req.params.id)
-      .single();
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Vidéo non trouvée' });
-
-    const video = {
-      id: data.id,
-      youtubeVideoId: data.youtube_video_id,
-      title: data.title,
-      uploader: data.uploader,
-      views: data.views,
-      duration: data.duration,
-      aiSummary: data.ai_summary,
-      originalDescription: data.original_description,
-      adminDescription: data.admin_annotation,
-      keywords: data.keywords || [],
-      theme: data.themes ? { id: data.themes.id, name: data.themes.name, color: data.themes.color } : null,
-      thumbnailUrl: data.thumbnail_url,
-      createdAt: data.created_at
-    };
-
-    res.json(video);
-  } catch (err) {
-    console.error('Erreur GET /api/videos/:id:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * GET /api/themes
- * Liste des thématiques disponibles
- */
+// 2. Themes
 app.get('/api/themes', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('themes')
-      .select('id, name, description, color')
-      .order('name');
-
-    if (error) throw error;
-    res.json(data || []);
-  } catch (err) {
-    console.error('Erreur GET /api/themes:', err);
-    res.status(500).json({ error: err.message });
-  }
+  const { data } = await supabase.from('themes').select('*').order('name');
+  res.json(data || []);
 });
 
-/**
- * GET /api/youtube-info/:videoId
- * Récupère les métadonnées YouTube d'une vidéo
- */
+// 3. Keywords
+app.get('/api/keywords', async (req, res) => {
+  const { data } = await supabase.from('videos').select('keywords');
+  const all = new Set();
+  (data || []).forEach(v => (v.keywords || []).forEach(k => all.add(k)));
+  res.json(Array.from(all).sort());
+});
+
+// 4. YouTube Info
 app.get('/api/youtube-info/:videoId', async (req, res) => {
   const { videoId } = req.params;
-
-  if (!YOUTUBE_API_KEY) {
-    return res.status(503).json({
-      error: 'YouTube API non configurée',
-      simulated: true,
-      data: {
-        title: `Vidéo YouTube ${videoId}`,
-        channelTitle: 'Chaîne YouTube',
-        description: 'Description non disponible (API YouTube non configurée)',
-        viewCount: 0,
-        duration: 'N/A',
-        thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-        tags: []
-      }
-    });
-  }
+  if (!YOUTUBE_API_KEY) return res.status(503).json({ error: 'YouTube API non configurée' });
 
   try {
-    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,statistics,contentDetails&key=${YOUTUBE_API_KEY}`;
-    const { data } = await axios.get(apiUrl);
-
-    if (!data.items || data.items.length === 0) {
-      return res.status(404).json({ error: 'Vidéo YouTube non trouvée' });
-    }
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+    const { data } = await axios.get(url);
+    if (!data.items?.length) return res.status(404).json({ error: 'Vidéo non trouvée' });
 
     const item = data.items[0];
-    const snippet = item.snippet;
-    const stats = item.statistics;
-    const content = item.contentDetails;
-
-    // Parser la durée ISO 8601
-    const duration = content.duration;
-    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-    let formattedDuration = 'N/A';
-    if (match) {
-      const hours = match[1] ? parseInt(match[1]) : 0;
-      const minutes = match[2] ? parseInt(match[2]) : 0;
-      const seconds = match[3] ? parseInt(match[3]) : 0;
-      if (hours > 0) {
-        formattedDuration = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      } else {
-        formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }
-    }
-
     res.json({
-      title: snippet.title,
-      channelTitle: snippet.channelTitle,
-      description: snippet.description,
-      viewCount: parseInt(stats.viewCount) || 0,
-      likeCount: parseInt(stats.likeCount) || 0,
-      duration: formattedDuration,
-      publishedAt: snippet.publishedAt,
-      thumbnail: snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url,
-      tags: snippet.tags || []
+      title: item.snippet.title,
+      channelTitle: item.snippet.channelTitle,
+      description: item.snippet.description,
+      viewCount: parseInt(item.statistics.viewCount) || 0,
+      thumbnail: item.snippet.thumbnails?.high?.url
     });
   } catch (err) {
-    console.error('Erreur YouTube API:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Erreur lors de la récupération des données YouTube' });
+    res.status(500).json({ error: 'Erreur YouTube API' });
   }
 });
 
-/**
- * GET /api/keywords
- * Liste de tous les mots-clés uniques
- */
-app.get('/api/keywords', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('videos')
-      .select('keywords')
-      .eq('is_published', true);
-
-    if (error) throw error;
-
-    const allKeywords = new Set();
-    (data || []).forEach(v => {
-      (v.keywords || []).forEach(kw => allKeywords.add(kw));
-    });
-
-    res.json(Array.from(allKeywords).sort());
-  } catch (err) {
-    console.error('Erreur GET /api/keywords:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ============================================
-// GÉNÉRATION DE RÉSUMÉ IA (GEMINI)
-// ============================================
-
-/**
- * POST /api/generate-summary
- * Génère un résumé IA + mots-clés bilingues
- */
+// 5. Generate Summary (VERSION STABLE TEXTE)
 app.post('/api/generate-summary', async (req, res) => {
-  const { title, description, channelTitle } = req.body;
-
-  if (!GEMINI_API_KEY) {
-    return res.status(503).json({
-      error: 'Gemini API non configurée',
-      simulated: true,
-      summary: `Cette vidéo "${title}" de ${channelTitle || 'la chaîne'} traite de sciences cognitives. [Résumé automatique non disponible]`,
-      keywords: ['Sciences Cognitives', 'IA', 'Recherche']
-    });
-  }
-
-  if (!title && !description) {
-    return res.status(400).json({ error: 'Titre ou description requis' });
-  }
+  const { title, description } = req.body;
+  if (!GEMINI_API_KEY) return res.json({ summary: "Résumé indisponible (Clé manquante)" });
 
   try {
-    const prompt = `Tu es un assistant expert en sciences cognitives pour l'Institut des Sciences Cognitives (ISC) de l'UQAM.
-    
-Analyse les informations suivantes sur une vidéo YouTube :
-Titre: ${title}
-Chaîne: ${channelTitle || 'Non spécifié'}
-Description: ${description || 'Non disponible'}
+    const prompt = `Résume cette vidéo de façon académique en Français (max 3 phrases) et donne 5 mots-clés séparés par des virgules à la fin (Format: Résumé... Mots-clés: A, B, C).
+        Titre: ${title}
+        Description: ${description}`;
 
-Tâche :
-1. Génère un résumé concis et informatif (3-5 phrases) en FRANÇAIS, ton professionnel académique.
-2. Extrais une liste de 5 à 8 mots-clés pertinents. IMPORTANT : Ces mots-clés doivent être un mélange de FRANÇAIS et d'ANGLAIS (bilingue) car les concepts techniques sont souvent en anglais.
-
-Réponds UNIQUEMENT au format JSON valide suivant, sans balises markdown :
-{
-  "summary": "Le résumé en français ici...",
-  "keywords": ["MotClé1", "Keyword2", "MotClé3", "Keyword4"]
-}`;
-
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-    const geminiResponse = await axios.post(geminiUrl, {
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.3,
-        responseMimeType: "application/json"
-      }
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const response = await axios.post(url, {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
     });
 
-    const contentText = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    let result = { summary: '', keywords: [] };
+    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    try {
-      result = JSON.parse(contentText);
-    } catch (e) {
-      console.error("Gemini JSON Parse Error:", contentText);
-      result.summary = contentText || 'Impossible de générer un résumé.';
+    // Parsing basique du texte retourné
+    let summary = text;
+    let keywords = [];
+
+    if (text.includes('Mots-clés:')) {
+      const parts = text.split('Mots-clés:');
+      summary = parts[0].trim();
+      keywords = parts[1].split(',').map(k => k.trim());
     }
 
-    res.json(result);
+    res.json({ summary, keywords });
   } catch (err) {
-    console.error('Erreur Gemini API:', err.response?.data || err.message);
-    res.status(500).json({
-      error: 'Erreur lors de la génération du résumé',
-      details: err.response?.data?.error?.message || err.message
-    });
+    console.error("Gemini Error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Erreur génération résumé" });
   }
 });
 
-// ============================================
-// ROUTES D'AUTHENTIFICATION
-// ============================================
-
+// 6. Auth & Admin
 app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ error: 'Mot de passe requis' });
-    }
-
-    const { data: settings, error: settingsError } = await supabase
-      .from('admin_settings')
-      .select('password_hash')
-      .limit(1)
-      .single();
-
-    if (settingsError) {
-      console.error('Erreur récupération admin_settings:', settingsError);
-      return res.status(500).json({ error: 'Impossible de récupérer les paramètres admin' });
-    }
-
-    if (!settings) {
-      return res.status(500).json({ error: 'Paramètres admin non configurés' });
-    }
-
-    const isValid = await bcrypt.compare(password, settings.password_hash);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Mot de passe incorrect' });
-    }
-
-    const token = jwt.sign(
-      { sub: 'admin', role: 'admin' },
-      SUPABASE_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({ token, message: 'Connecté avec succès' });
-  } catch (err) {
-    console.error('Erreur POST /api/auth/login:', err);
-    res.status(500).json({ error: err.message });
+  const { password } = req.body;
+  const { data } = await supabase.from('admin_settings').select('password_hash').single();
+  if (data && await bcrypt.compare(password, data.password_hash)) {
+    const token = jwt.sign({ role: 'admin' }, SUPABASE_SECRET, { expiresIn: '24h' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: 'Mot de passe incorrect' });
   }
 });
-
-app.get('/api/auth/verify', verifyAdmin, (req, res) => {
-  res.json({ valid: true, adminId: req.adminId });
-});
-
-// ============================================
-// ROUTES ADMIN (PROTÉGÉES)
-// ============================================
 
 app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
-  try {
-    const {
-      youtubeVideoId,
-      title,
-      uploader,
-      aiSummary,
-      keywords,
-      adminAnnotation,
-      originalDescription,
-      themeId
-    } = req.body;
-
-    if (!youtubeVideoId) {
-      return res.status(400).json({ error: 'youtubeVideoId requis' });
-    }
-
-    const { data: existing } = await supabase
-      .from('videos')
-      .select('id')
-      .eq('youtube_video_id', youtubeVideoId)
-      .single();
-
-    if (existing) {
-      return res.status(400).json({ error: 'Cette vidéo existe déjà dans la base de données' });
-    }
-
-    let views = 0;
-    let thumbnailUrl = `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
-
-    // Utilisation de YouTube API uniquement si configurée
-    if (YOUTUBE_API_KEY) {
-      try {
-        const ytResponse = await axios.get(
-          `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${youtubeVideoId}&key=${YOUTUBE_API_KEY}`
-        );
-        if (ytResponse.data.items?.[0]) {
-          views = parseInt(ytResponse.data.items[0].statistics.viewCount) || 0;
-          const thumbs = ytResponse.data.items[0].snippet.thumbnails;
-          thumbnailUrl = thumbs.maxres?.url || thumbs.high?.url || thumbnailUrl;
-        }
-      } catch (err) {
-        console.warn('Impossible de récupérer les données YouTube:', err.message);
-      }
-    }
-
-    const { data, error } = await supabase
-      .from('videos')
-      .insert([{
-        youtube_video_id: youtubeVideoId,
-        title: title || `Vidéo ${youtubeVideoId}`,
-        uploader: uploader || 'ISC Channel',
-        views: views,
-        ai_summary: aiSummary || '',
-        keywords: keywords || [],
-        admin_annotation: adminAnnotation || '',
-        original_description: originalDescription || '',
-        theme_id: themeId || null,
-        thumbnail_url: thumbnailUrl,
-        is_published: true
-      }])
-      .select('*, themes(id, name, color)');
-
-    if (error) throw error;
-
-    res.status(201).json({
-      message: 'Vidéo ajoutée avec succès',
-      video: data[0]
-    });
-  } catch (err) {
-    console.error('Erreur POST /api/admin/videos:', err);
-    res.status(500).json({ error: err.message });
-  }
+  const { error } = await supabase.from('videos').insert([req.body]);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
 });
 
 app.put('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
-  try {
-    const { title, aiSummary, keywords, adminAnnotation, themeId, uploader } = req.body;
-
-    const updateData = {};
-    if (title !== undefined) updateData.title = title;
-    if (uploader !== undefined) updateData.uploader = uploader;
-    if (aiSummary !== undefined) updateData.ai_summary = aiSummary;
-    if (keywords !== undefined) updateData.keywords = keywords;
-    if (adminAnnotation !== undefined) updateData.admin_annotation = adminAnnotation;
-    if (themeId !== undefined) updateData.theme_id = themeId;
-    updateData.updated_at = new Date().toISOString();
-
-    const { data, error } = await supabase
-      .from('videos')
-      .update(updateData)
-      .eq('id', req.params.id)
-      .select('*, themes(id, name, color)');
-
-    if (error) throw error;
-    if (!data || data.length === 0) {
-      return res.status(404).json({ error: 'Vidéo non trouvée' });
-    }
-
-    res.json({ message: 'Vidéo mise à jour avec succès', video: data[0] });
-  } catch (err) {
-    console.error('Erreur PUT /api/admin/videos/:id:', err);
-    res.status(500).json({ error: err.message });
-  }
+  const { error } = await supabase.from('videos').update(req.body).eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
 });
 
 app.delete('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
-  try {
-    const { error } = await supabase
-      .from('videos')
-      .delete()
-      .eq('id', req.params.id);
-
-    if (error) throw error;
-    res.json({ message: 'Vidéo supprimée avec succès' });
-  } catch (err) {
-    console.error('Erreur DELETE /api/admin/videos/:id:', err);
-    res.status(500).json({ error: err.message });
-  }
+  const { error } = await supabase.from('videos').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
 });
 
-// ============================================
-// ROUTE FALLBACK
-// ============================================
+// Fallback
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'plate.html'))); // Attention : plate.html
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Gestion des 404
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route non trouvée' });
-});
-
-// ============================================
-// DÉMARRAGE DU SERVEUR
-// ============================================
-
-app.listen(PORT, () => {
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🎬 Plateforme Vidéo ISC - Backend API');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);
-  console.log(`📊 Supabase: ${SUPABASE_URL}`);
-  console.log(`🔑 YouTube API: ${YOUTUBE_API_KEY ? 'Configurée' : 'Non configurée'}`);
-  console.log(`🤖 Gemini API: ${GEMINI_API_KEY ? 'Configurée' : 'Non configurée'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-});
+app.listen(PORT, () => console.log(`Serveur restauré sur port ${PORT}`));
