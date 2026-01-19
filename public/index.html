@@ -5,23 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plateforme de diffusion de l'institut des sciences cognitives</title>
-    <meta name="description"
-        content="Plateforme de diffusion vidéo de l'Institut des Sciences Cognitives de l'UQAM. Explorez des conférences, cours et présentations sur la cognition, l'IA, les neurosciences et la philosophie de l'esprit.">
-    <meta name="keywords" content="ISC, UQAM, sciences cognitives, neurosciences, IA, philosophie, conférences, vidéos">
-    <meta property="og:title" content="Plateforme ISC - Institut des Sciences Cognitives UQAM">
-    <meta property="og:description"
-        content="Explorez des vidéos sur les sciences cognitives, l'IA et les neurosciences.">
-    <meta property="og:type" content="website">
-
+    <link rel="icon" href="clap_cine.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --uqam-dark-blue: #003366;
             --uqam-light-blue: #337ab7;
-            --uqam-grey: #f5f5f5;
+            --uqam-grey: #f0f0f0;
             --uqam-dark-grey: #cccccc;
         }
 
@@ -31,24 +23,23 @@
         }
 
         .header-bg {
-            background: linear-gradient(135deg, var(--uqam-dark-blue) 0%, #004488 100%);
+            background-color: var(--uqam-dark-blue);
         }
 
         .button-primary {
             background-color: var(--uqam-light-blue);
             color: white;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         .button-primary:hover {
             background-color: #286090;
-            transform: translateY(-1px);
         }
 
         .button-secondary {
             background-color: var(--uqam-dark-grey);
             color: var(--uqam-dark-blue);
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         .button-secondary:hover {
@@ -57,13 +48,13 @@
 
         .video-card {
             background-color: white;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--uqam-dark-grey);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
         .video-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             cursor: pointer;
         }
 
@@ -73,8 +64,7 @@
 
         .search-input:focus {
             border-color: var(--uqam-light-blue);
-            box-shadow: 0 0 0 3px rgba(51, 122, 183, 0.25);
-            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(51, 122, 183, 0.25);
         }
 
         .video-player-container {
@@ -85,62 +75,51 @@
             background-color: white;
         }
 
-        /* Boutons de partage */
         .share-button {
-            padding: 10px 16px;
-            border-radius: 8px;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
             text-decoration: none;
+            margin-right: 8px;
+            margin-bottom: 8px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
+            transition: opacity 0.2s;
         }
 
         .share-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0.85;
         }
 
         .share-facebook {
             background-color: #1877F2;
-            color: white;
         }
 
         .share-twitter {
             background-color: #1DA1F2;
-            color: white;
         }
 
         .share-linkedin {
             background-color: #0A66C2;
-            color: white;
         }
 
         .share-whatsapp {
             background-color: #25D366;
-            color: white;
         }
 
         .share-telegram {
             background-color: #0088cc;
-            color: white;
         }
 
         .share-email {
-            background-color: #6c757d;
-            color: white;
+            background-color: #EA4335;
         }
 
         .share-copy {
-            background-color: var(--uqam-dark-blue);
-            color: white;
+            background-color: var(--uqam-light-blue);
         }
 
-        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -152,45 +131,30 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
         }
 
         .modal-content {
             background-color: white;
-            padding: 28px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 8px;
             text-align: left;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             width: 90%;
-            max-width: 550px;
-            transform: scale(0.9);
-            transition: all 0.3s ease;
-        }
-
-        .modal-overlay.show .modal-content {
-            transform: scale(1);
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-content h3 {
             color: var(--uqam-dark-blue);
-            margin-bottom: 20px;
-            font-size: 1.25rem;
-            font-weight: 700;
+            margin-bottom: 15px;
         }
 
         .modal-content label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             font-weight: 600;
             color: #333;
-            font-size: 0.875rem;
         }
 
         .modal-content input[type="text"],
@@ -198,20 +162,10 @@
         .modal-content textarea,
         .modal-content select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 0.95rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .modal-content input:focus,
-        .modal-content textarea:focus,
-        .modal-content select:focus {
-            border-color: var(--uqam-light-blue);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(51, 122, 183, 0.15);
+            padding: 10px;
+            border: 1px solid var(--uqam-dark-grey);
+            border-radius: 4px;
+            margin-bottom: 15px;
         }
 
         .modal-content textarea {
@@ -219,18 +173,11 @@
             resize: vertical;
         }
 
-        .modal-content input:disabled,
-        .modal-content textarea:disabled {
-            background-color: #f9f9f9;
-            cursor: not-allowed;
-        }
-
-        /* Tags de mots-clés */
         .keyword-tag {
-            background-color: #e8f4fc;
+            background-color: var(--uqam-grey);
             color: var(--uqam-dark-blue);
-            padding: 4px 10px;
-            border-radius: 20px;
+            padding: 3px 8px;
+            border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
             margin-right: 4px;
@@ -241,16 +188,15 @@
         .keyword-tag-detail {
             background-color: var(--uqam-light-blue);
             color: white;
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 5px 12px;
+            border-radius: 6px;
             font-size: 0.875rem;
             font-weight: 600;
-            margin-right: 8px;
-            margin-bottom: 8px;
+            margin-right: 6px;
+            margin-bottom: 6px;
             display: inline-block;
         }
 
-        /* Container miniature */
         .video-thumbnail-container {
             width: 100%;
             height: 12rem;
@@ -263,96 +209,80 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
         }
 
-        .video-card:hover .video-thumbnail-container img {
-            transform: scale(1.05);
-        }
-
-        /* Indicateur de thème */
-        .theme-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            padding: 4px 10px;
+        .status-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
             border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            font-size: 0.8rem;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Loading spinner */
+        .status-connected {
+            background-color: #10B981;
+            color: white;
+        }
+
+        .status-disconnected {
+            background-color: #EF4444;
+            color: white;
+        }
+
+        .status-loading {
+            background-color: #F59E0B;
+            color: white;
+        }
+
         .loading-spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid var(--uqam-light-blue);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, .3);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
             }
         }
 
-        /* Toast notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 14px 24px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 500;
-            z-index: 2000;
-            transform: translateX(120%);
-            transition: transform 0.3s ease;
+        .section-title {
+            color: var(--uqam-dark-blue);
+            border-bottom: 2px solid var(--uqam-light-blue);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
         }
 
-        .toast.show {
-            transform: translateX(0);
+        .annotation-box {
+            background-color: #EBF5FF;
+            border-left: 4px solid var(--uqam-light-blue);
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
         }
 
-        .toast-success {
-            background-color: #10B981;
-        }
-
-        .toast-error {
-            background-color: #EF4444;
-        }
-
-        .toast-info {
-            background-color: var(--uqam-light-blue);
-        }
-
-        /* Formatage des nombres de vues */
-        .view-count {
+        .help-text {
+            font-size: 0.75rem;
             color: #666;
-            font-size: 0.875rem;
+            margin-top: -10px;
+            margin-bottom: 12px;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Toast Container -->
-    <div id="toastContainer"></div>
-
-    <header class="header-bg text-white p-4 shadow-lg">
+    <header class="header-bg text-white p-4 shadow-md">
         <div class="container mx-auto flex flex-wrap items-center justify-between">
-            <a href="#" onclick="showHomePage(); return false;"
-                class="text-xl sm:text-2xl font-bold hover:opacity-90 transition-opacity">
-                <i class="fas fa-brain mr-2"></i>Plateforme de diffusion ISC
-            </a>
+            <a href="#" onclick="showHomePage(); return false;" class="text-xl sm:text-2xl font-bold">Plateforme de
+                diffusion de l'institut des sciences cognitives</a>
 
             <div
                 class="w-full md:w-auto mt-4 md:mt-0 flex flex-col md:flex-row items-center md:ml-auto space-y-2 md:space-y-0 md:space-x-2">
@@ -360,7 +290,7 @@
                 <div class="relative w-full md:w-auto">
                     <input type="search" id="searchInput"
                         class="search-input w-full md:w-64 lg:w-80 p-2 pl-10 rounded-md text-gray-800 focus:outline-none"
-                        placeholder="Rechercher...">
+                        placeholder="Rechercher par titre, texte...">
                     <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"><i
                             class="fas fa-search"></i></span>
                 </div>
@@ -369,173 +299,100 @@
                 <div class="relative w-full md:w-auto">
                     <select id="keywordFilter"
                         class="search-input w-full md:w-48 p-2 pr-10 rounded-md text-gray-800 focus:outline-none appearance-none">
-                        <option value="">Tous les mots-clés</option>
+                        <option value="">Filtrer par mot-clé...</option>
                     </select>
-                    <span
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"><i
+                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"><i
                             class="fas fa-chevron-down"></i></span>
                 </div>
 
-                <!-- Filtre par thème -->
-                <div class="relative w-full md:w-auto">
-                    <select id="themeFilter"
-                        class="search-input w-full md:w-48 p-2 pr-10 rounded-md text-gray-800 focus:outline-none appearance-none">
-                        <option value="">Tous les thèmes</option>
-                    </select>
-                    <span
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"><i
-                            class="fas fa-chevron-down"></i></span>
-                </div>
-
-                <!-- Section Admin -->
+                <!-- Admin -->
                 <div id="adminControlsContainer"
                     class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
                     <button id="adminLoginButton"
-                        class="button-secondary font-semibold py-2 px-4 rounded-md w-full md:w-auto">
-                        <i class="fas fa-lock mr-1"></i>Accès Admin
-                    </button>
+                        class="button-secondary font-semibold py-2 px-4 rounded-md w-full md:w-auto">Accès
+                        Admin</button>
                     <button id="addYoutubeVideoBtn"
-                        class="button-primary font-semibold py-2 px-4 rounded-md w-full md:w-auto hidden">
-                        <i class="fab fa-youtube mr-2"></i>Ajouter Vidéo
-                    </button>
+                        class="button-primary font-semibold py-2 px-4 rounded-md w-full md:w-auto hidden"><i
+                            class="fab fa-youtube mr-2"></i>Ajouter Vidéo</button>
                 </div>
             </div>
         </div>
     </header>
 
     <main id="mainContent" class="container mx-auto p-4">
-        <!-- Page grille de vidéos -->
         <section id="videoGridPage">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold text-gray-700">
-                    <i class="fas fa-play-circle mr-2 text-[var(--uqam-light-blue)]"></i>Vidéos disponibles
-                </h2>
+                <h2 class="text-2xl font-semibold text-gray-700">Vidéos disponibles</h2>
                 <span id="videoCount" class="text-gray-500"></span>
             </div>
-
-            <!-- Loader -->
-            <div id="gridLoader" class="text-center py-12 hidden">
-                <div class="loading-spinner mx-auto mb-4" style="width: 40px; height: 40px;"></div>
-                <p class="text-gray-500">Chargement des vidéos...</p>
-            </div>
-
-            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Les cartes de vidéos seront insérées ici par JS -->
-            </div>
-
+            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6"></div>
             <div class="text-center mt-8">
-                <button id="viewMoreButton" class="button-primary font-semibold py-2 px-6 rounded-md hidden">
-                    Voir Toutes les Vidéos
-                </button>
+                <button id="viewMoreButton" class="button-primary font-semibold py-2 px-6 rounded-md">Voir Toutes les
+                    Vidéos</button>
             </div>
         </section>
 
-        <!-- Page détail vidéo -->
         <section id="videoPlayerPage" class="hidden">
             <div class="max-w-4xl mx-auto">
-                <button onclick="showHomePage(); return false;" class="button-primary mb-4 py-2 px-4 rounded-md">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
-                </button>
+                <button onclick="showHomePage(); return false;" class="button-primary mb-4 py-2 px-4 rounded-md"><i
+                        class="fas fa-arrow-left mr-2"></i>Retour</button>
 
-                <!-- Lecteur Vidéo (iframe YouTube) -->
                 <div class="video-player-container rounded-lg shadow-xl overflow-hidden">
-                    <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src="" title="Lecteur vidéo"
-                        frameborder="0"
+                    <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src=""
+                        title="YouTube video player" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
 
-                <!-- Informations sur la vidéo -->
                 <div class="video-info p-6 mt-4 rounded-lg shadow-lg">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <h2 id="videoTitleElem" class="text-2xl md:text-3xl font-bold text-gray-800"></h2>
-                            <div class="flex flex-wrap items-center gap-3 mt-2 text-gray-600">
-                                <span id="videoUploader"><i class="fas fa-user mr-1"></i><span
-                                        class="font-semibold"></span></span>
-                                <span id="videoViews"><i class="fas fa-eye mr-1"></i><span
-                                        class="font-semibold"></span></span>
-                                <span id="videoTheme"
-                                    class="px-3 py-1 rounded-full text-sm font-semibold text-white"></span>
-                            </div>
-                        </div>
-                        <!-- Boutons Admin (visible seulement si admin) -->
-                        <div id="videoDetailAdminBtns" class="hidden flex-shrink-0 space-x-2">
-                            <button id="editCurrentVideoBtn" class="button-secondary py-2 px-3 rounded-md text-sm">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button id="deleteCurrentVideoBtn"
-                                class="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-md text-sm">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <h2 id="videoTitleElem" class="text-3xl font-bold mb-2 text-gray-800"></h2>
+                    <p id="videoUploader" class="text-gray-600 mb-1">Par: <span class="font-semibold"></span></p>
+                    <p id="videoViews" class="text-gray-600 mb-4">Vues: <span class="font-semibold"></span></p>
 
                     <!-- Résumé IA -->
                     <div class="mb-6">
-                        <h3
-                            class="text-xl font-bold mb-3 text-[var(--uqam-dark-blue)] border-b-2 border-[var(--uqam-light-blue)] pb-1">
-                            <i class="fas fa-robot mr-2"></i>Résumé (généré par IA)
-                        </h3>
-                        <p id="videoAiSummary" class="text-gray-700 whitespace-pre-line leading-relaxed"></p>
+                        <h3 class="text-xl font-bold section-title">Résumé (généré par IA)</h3>
+                        <p id="videoAiSummary" class="text-gray-700 whitespace-pre-line"></p>
                     </div>
 
                     <!-- Mots-clés -->
                     <div class="mb-6">
-                        <h3
-                            class="text-xl font-bold mb-3 text-[var(--uqam-dark-blue)] border-b-2 border-[var(--uqam-light-blue)] pb-1">
-                            <i class="fas fa-tags mr-2"></i>Mots-clés
-                        </h3>
+                        <h3 class="text-xl font-bold section-title">Mots-clés</h3>
                         <div id="videoKeywordsContainer" class="flex flex-wrap"></div>
                     </div>
 
                     <!-- Annotation Admin -->
                     <div class="mb-6">
-                        <h3
-                            class="text-xl font-bold mb-3 text-[var(--uqam-dark-blue)] border-b-2 border-[var(--uqam-light-blue)] pb-1">
-                            <i class="fas fa-comment-dots mr-2"></i>Annotation de l'administrateur
-                        </h3>
-                        <p id="videoAdminAnnotation"
-                            class="text-gray-700 whitespace-pre-line bg-blue-50 p-4 border-l-4 border-blue-400 rounded-r-md">
-                        </p>
+                        <h3 class="text-xl font-bold section-title">Annotation de l'administrateur</h3>
+                        <div id="videoAdminAnnotation" class="annotation-box text-gray-700 whitespace-pre-line"></div>
                     </div>
 
-                    <!-- Description Originale -->
+                    <!-- Description originale -->
                     <details class="mb-6">
-                        <summary class="cursor-pointer text-gray-600 hover:text-black font-medium">
-                            <i class="fab fa-youtube mr-1"></i>Voir la description YouTube originale
-                        </summary>
+                        <summary class="cursor-pointer text-gray-600 hover:text-black font-semibold">Voir la description
+                            YouTube originale</summary>
                         <p id="videoOriginalDescription"
                             class="text-gray-600 mt-2 p-3 bg-gray-50 border rounded-md whitespace-pre-line"></p>
                     </details>
 
-                    <!-- Boutons de Partage Étendus -->
-                    <div class="share-buttons border-t pt-5">
-                        <h3 class="text-lg font-semibold mb-3 text-gray-700">
-                            <i class="fas fa-share-alt mr-2"></i>Partager cette vidéo
-                        </h3>
-                        <div class="flex flex-wrap gap-2">
-                            <a href="#" id="shareFacebook" target="_blank" class="share-button share-facebook">
-                                <i class="fab fa-facebook-f"></i> Facebook
-                            </a>
-                            <a href="#" id="shareTwitter" target="_blank" class="share-button share-twitter">
-                                <i class="fab fa-x-twitter"></i> X (Twitter)
-                            </a>
-                            <a href="#" id="shareLinkedIn" target="_blank" class="share-button share-linkedin">
-                                <i class="fab fa-linkedin-in"></i> LinkedIn
-                            </a>
-                            <a href="#" id="shareWhatsApp" target="_blank" class="share-button share-whatsapp">
-                                <i class="fab fa-whatsapp"></i> WhatsApp
-                            </a>
-                            <a href="#" id="shareTelegram" target="_blank" class="share-button share-telegram">
-                                <i class="fab fa-telegram-plane"></i> Telegram
-                            </a>
-                            <a href="#" id="shareEmail" class="share-button share-email">
-                                <i class="fas fa-envelope"></i> Email
-                            </a>
-                            <button id="copyLinkButton" class="share-button share-copy">
-                                <i class="fas fa-link"></i> Copier le lien
-                            </button>
+                    <!-- Boutons de Partage étendus -->
+                    <div class="border-t pt-4">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Partager :</h3>
+                        <div id="shareButtonsContainer" class="flex flex-wrap">
+                            <a href="#" id="shareFacebook" target="_blank" class="share-button share-facebook"><i
+                                    class="fab fa-facebook-f"></i> Facebook</a>
+                            <a href="#" id="shareTwitter" target="_blank" class="share-button share-twitter"><i
+                                    class="fab fa-twitter"></i> Twitter</a>
+                            <a href="#" id="shareLinkedIn" target="_blank" class="share-button share-linkedin"><i
+                                    class="fab fa-linkedin-in"></i> LinkedIn</a>
+                            <a href="#" id="shareWhatsApp" target="_blank" class="share-button share-whatsapp"><i
+                                    class="fab fa-whatsapp"></i> WhatsApp</a>
+                            <a href="#" id="shareTelegram" target="_blank" class="share-button share-telegram"><i
+                                    class="fab fa-telegram-plane"></i> Telegram</a>
+                            <a href="#" id="shareEmail" class="share-button share-email"><i class="fas fa-envelope"></i>
+                                Email</a>
+                            <button id="copyLinkButton" class="share-button share-copy"><i class="fas fa-link"></i>
+                                Copier lien</button>
                         </div>
                     </div>
                 </div>
@@ -543,742 +400,490 @@
         </section>
     </main>
 
-    <footer class="text-center p-4 mt-8 text-gray-600 border-t border-gray-300 bg-white">
-        <p>© 2025 Institut des Sciences Cognitives - UQAM</p>
-        <p class="text-sm mt-1">Développement par l'équipe ISC</p>
+    <footer class="text-center p-4 mt-8 text-gray-600 border-t border-gray-300">
+        © 2025 Développement par Dominique S. Loyer, assistant de recherche ISC. Tous droits réservés.
     </footer>
 
-    <!-- Modal de connexion Admin -->
-    <div id="adminLoginModal" class="modal-overlay">
+    <div id="statusBadge" class="status-badge status-loading">
+        <i class="fas fa-sync-alt fa-spin mr-2"></i><span id="statusText">Connexion...</span>
+    </div>
+
+    <!-- Modals -->
+    <div id="messageModal" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <p id="modalMessageText" class="text-lg"></p>
+            <button id="modalCloseButton" class="button-primary mt-4 py-2 px-6 rounded-md">OK</button>
+        </div>
+    </div>
+
+    <div id="adminLoginModal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3><i class="fas fa-lock mr-2"></i>Accès Administrateur</h3>
+            <h3 class="text-xl font-semibold"><i class="fas fa-lock mr-2"></i>Accès Administrateur</h3>
             <label for="adminPassword">Mot de passe :</label>
-            <input type="password" id="adminPassword" placeholder="Entrez le mot de passe admin">
+            <input type="password" id="adminPassword" placeholder="********">
             <div class="flex justify-end space-x-2 mt-4">
+                <button id="submitAdminLogin" class="button-primary py-2 px-4 rounded-md">Se Connecter</button>
                 <button id="closeAdminLoginModal" class="button-secondary py-2 px-4 rounded-md">Annuler</button>
-                <button id="submitAdminLogin" class="button-primary py-2 px-4 rounded-md">
-                    <i class="fas fa-sign-in-alt mr-1"></i>Se Connecter
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal pour Ajouter/Modifier une vidéo YouTube -->
-    <div id="addYoutubeVideoModal" class="modal-overlay">
-        <div class="modal-content max-h-[90vh] overflow-y-auto">
-            <h3 id="videoModalTitle"><i class="fab fa-youtube mr-2"></i>Ajouter une Vidéo YouTube</h3>
+    <div id="addYoutubeVideoModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 id="modalTitle" class="text-xl font-semibold"><i class="fab fa-youtube mr-2 text-red-500"></i>Ajouter
+                une Vidéo YouTube</h3>
 
-            <label for="youtubeVideoUrl">URL de la vidéo YouTube :</label>
+            <label for="youtubeVideoUrl">URL YouTube :</label>
             <input type="text" id="youtubeVideoUrl" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
-            <button id="fetchYoutubeInfoBtn" class="button-secondary py-2 px-4 rounded-md mb-3 w-full">
-                <i class="fas fa-download mr-2"></i>Récupérer Infos YouTube
-            </button>
+            <p class="help-text">Collez l'URL complète de la vidéo YouTube</p>
 
-            <!-- Aperçu des informations récupérées -->
-            <div id="youtubeInfoPreview" class="mb-3 hidden border p-4 rounded-md bg-gray-50">
-                <h4 class="font-semibold text-lg text-[var(--uqam-dark-blue)] mb-3">
-                    <i class="fas fa-info-circle mr-1"></i>Informations Récupérées
-                </h4>
-                <img id="previewThumbnail" src="" alt="Miniature" class="w-40 h-auto my-2 rounded shadow">
+            <label for="videoTitleInput">Titre :</label>
+            <input type="text" id="videoTitleInput" placeholder="Titre de la vidéo">
 
-                <label for="previewTitle">Titre :</label>
-                <input type="text" id="previewTitle" placeholder="Titre de la vidéo">
+            <label for="videoUploaderInput">Chaîne / Auteur :</label>
+            <input type="text" id="videoUploaderInput" placeholder="Nom de la chaîne YouTube">
 
-                <label for="previewChannel">Chaîne :</label>
-                <input type="text" id="previewChannel" placeholder="Nom de la chaîne">
+            <label for="videoKeywordsInput">Mots-clés (séparés par virgule) :</label>
+            <input type="text" id="videoKeywordsInput" placeholder="IA, Cognition, Neurosciences, Philosophie...">
+            <p class="help-text">Les mots-clés apparaîtront dans le filtre et sur les cartes</p>
 
-                <label for="previewAiSummary">Résumé :</label>
-                <textarea id="previewAiSummary" rows="3" placeholder="Résumé de la vidéo..."></textarea>
+            <label for="videoAiSummaryInput">Résumé (généré par IA) :</label>
+            <textarea id="videoAiSummaryInput"
+                placeholder="Collez ici le résumé généré par l'IA ou décrivez le contenu de la vidéo..."></textarea>
+            <p class="help-text">Ce résumé sera affiché sur la page de détail de la vidéo</p>
 
-                <label for="previewKeywords">Mots-clés (séparés par virgule) :</label>
-                <input type="text" id="previewKeywords" placeholder="IA, Cognition, Neurosciences">
-
-                <label for="previewTheme">Thématique :</label>
-                <select id="previewTheme">
-                    <option value="">-- Sélectionner --</option>
-                </select>
-            </div>
-
-            <!-- Annotation personnelle admin -->
-            <label for="adminCustomDescription">Annotation personnelle (visible sur la page de détail) :</label>
+            <label for="adminCustomDescription">Votre annotation personnelle :</label>
             <textarea id="adminCustomDescription"
-                placeholder="Ajoutez votre analyse, notes ou commentaires..."></textarea>
+                placeholder="Vos notes, analyses ou commentaires sur cette vidéo..."></textarea>
+            <p class="help-text">Visible sur la page de détail dans la section "Annotation de l'administrateur"</p>
+
+            <label for="originalDescriptionInput">Description YouTube originale (optionnel) :</label>
+            <textarea id="originalDescriptionInput"
+                placeholder="Copiez la description originale de YouTube..."></textarea>
 
             <input type="hidden" id="editingVideoId">
 
             <div class="flex justify-end space-x-2 mt-4">
-                <button id="closeAddYoutubeVideoModal" class="button-secondary py-2 px-4 rounded-md">Annuler</button>
+                <button id="deleteVideoBtn" class="bg-red-500 text-white py-2 px-4 rounded-md hidden hover:bg-red-600">
+                    <i class="fas fa-trash mr-1"></i> Supprimer
+                </button>
                 <button id="saveYoutubeVideoBtn" class="button-primary py-2 px-4 rounded-md">
-                    <i class="fas fa-save mr-1"></i>Sauvegarder
+                    <span id="saveBtnText">Sauvegarder</span>
+                    <span id="saveBtnSpinner" class="loading-spinner hidden"></span>
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmation de suppression -->
-    <div id="deleteConfirmModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="text-red-600"><i class="fas fa-exclamation-triangle mr-2"></i>Confirmer la suppression</h3>
-            <p class="text-gray-700 mb-4">Êtes-vous sûr de vouloir supprimer cette vidéo ? Cette action est
-                irréversible.</p>
-            <div class="flex justify-end space-x-2 mt-4">
-                <button id="cancelDeleteBtn" class="button-secondary py-2 px-4 rounded-md">Annuler</button>
-                <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md">
-                    <i class="fas fa-trash mr-1"></i>Supprimer
-                </button>
+                <button id="closeAddYoutubeVideoModal" class="button-secondary py-2 px-4 rounded-md">Annuler</button>
             </div>
         </div>
     </div>
 
     <script>
         // ============================================
-        // CONFIGURATION
+        // CONFIGURATION SUPABASE
         // ============================================
+        const SUPABASE_URL = 'https://okopmosonqolgnfgabxf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rb3Btb3NvbnFvbGduZmdhYnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3Njk2MzIsImV4cCI6MjA4NDM0NTYzMn0.ji9VGjPvEAA3cVevQEKO0j5Ljada_fAsaUBTEhgBp1U';
 
-        // URL de l'API backend (changer selon l'environnement)
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? '' // En local, utilise le même serveur
-            : 'https://isc-video-platform.onrender.com'; // En production
+        // MOT DE PASSE ADMIN
+        const ADMIN_PASSWORD = 'Isc2025_plateforme';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ============================================
-        // ÉTAT GLOBAL
+        // VARIABLES GLOBALES
         // ============================================
-
         let isAdmin = false;
-        let adminToken = null;
         let currentVideos = [];
-        let themes = [];
-        let currentVideoId = null;
         const initialDisplayCount = 6;
         let showingAllVideos = false;
 
         // ============================================
         // ÉLÉMENTS DOM
         // ============================================
-
         const videoGrid = document.getElementById('videoGrid');
-        const gridLoader = document.getElementById('gridLoader');
         const searchInput = document.getElementById('searchInput');
         const keywordFilter = document.getElementById('keywordFilter');
-        const themeFilter = document.getElementById('themeFilter');
         const videoGridPage = document.getElementById('videoGridPage');
         const videoPlayerPage = document.getElementById('videoPlayerPage');
         const mainVideoPlayerIframe = document.getElementById('mainVideoPlayerIframe');
         const videoTitleElem = document.getElementById('videoTitleElem');
         const videoUploaderElem = document.getElementById('videoUploader').querySelector('span');
         const videoViewsElem = document.getElementById('videoViews').querySelector('span');
-        const videoThemeElem = document.getElementById('videoTheme');
         const videoAiSummaryElem = document.getElementById('videoAiSummary');
         const videoKeywordsContainerElem = document.getElementById('videoKeywordsContainer');
         const videoAdminAnnotationElem = document.getElementById('videoAdminAnnotation');
         const videoOriginalDescriptionElem = document.getElementById('videoOriginalDescription');
-        const videoDetailAdminBtns = document.getElementById('videoDetailAdminBtns');
         const adminLoginButton = document.getElementById('adminLoginButton');
         const addYoutubeVideoBtn = document.getElementById('addYoutubeVideoBtn');
+        const messageModal = document.getElementById('messageModal');
+        const modalMessageText = document.getElementById('modalMessageText');
+        const modalCloseButton = document.getElementById('modalCloseButton');
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const addYoutubeVideoModal = document.getElementById('addYoutubeVideoModal');
         const viewMoreButton = document.getElementById('viewMoreButton');
-        const videoCountElem = document.getElementById('videoCount');
+        const statusBadge = document.getElementById('statusBadge');
 
         // ============================================
-        // UTILITAIRES
+        // FONCTIONS UTILITAIRES
         // ============================================
+        function showModal(el) { el.classList.remove('hidden'); }
+        function hideModal(el) { el.classList.add('hidden'); }
+        function showUserMessage(msg) { modalMessageText.innerText = msg; showModal(messageModal); }
 
-        function showModal(modalElement) {
-            modalElement.classList.add('show');
-        }
-
-        function hideModal(modalElement) {
-            modalElement.classList.remove('show');
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'} mr-2"></i>${message}`;
-            container.appendChild(toast);
-
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        }
-
-        function formatViews(views) {
-            if (!views || views === 0) return 'N/A';
-            if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M vues';
-            if (views >= 1000) return (views / 1000).toFixed(0) + 'K vues';
-            return views + ' vues';
+        function updateStatus(state, text) {
+            statusBadge.className = 'status-badge ' +
+                (state === 'connected' ? 'status-connected' : state === 'loading' ? 'status-loading' : 'status-disconnected');
+            statusBadge.innerHTML = (state === 'loading' ? '<i class="fas fa-sync-alt fa-spin mr-2"></i>' : '<i class="fas fa-database mr-2"></i>') + text;
         }
 
         function getYouTubeVideoId(url) {
+            if (!url) return null;
             const patterns = [
                 /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
                 /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
-                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+                /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
             ];
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match && match[1]) return match[1];
-            }
+            for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
             return null;
         }
 
-        async function apiRequest(endpoint, options = {}) {
-            const url = API_BASE_URL + endpoint;
-            const headers = { 'Content-Type': 'application/json', ...options.headers };
+        // Proxy weserv.nl pour les miniatures (contourne le blocage CORS)
+        function getThumbnailUrl(videoId) {
+            return videoId
+                ? `https://images.weserv.nl/?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2F${videoId}%2Fhqdefault.jpg&w=400`
+                : 'https://placehold.co/400x300/003366/ffffff?text=Vidéo+ISC';
+        }
 
-            if (adminToken) {
-                headers['Authorization'] = `Bearer ${adminToken}`;
-            }
-
+        // ============================================
+        // SUPABASE - CHARGEMENT
+        // ============================================
+        async function loadVideosFromSupabase() {
+            updateStatus('loading', 'Chargement...');
             try {
-                const response = await fetch(url, { ...options, headers });
-                const data = await response.json();
+                const { data, error } = await supabaseClient
+                    .from('videos')
+                    .select('*')
+                    .eq('is_published', true)
+                    .order('created_at', { ascending: false });
 
-                if (!response.ok) {
-                    throw new Error(data.error || 'Erreur serveur');
-                }
+                if (error) throw error;
 
-                return data;
-            } catch (err) {
-                console.error('API Error:', err);
-                throw err;
+                currentVideos = data.map(v => ({
+                    id: v.id,
+                    youtubeVideoId: v.youtube_video_id,
+                    title: v.title,
+                    uploader: v.uploader || 'ISC Channel',
+                    views: v.views ? v.views.toLocaleString() : 'N/A',
+                    duration: v.duration || '',
+                    aiSummary: v.ai_summary || 'Aucun résumé disponible.',
+                    keywords: v.keywords || [],
+                    adminDescription: v.admin_annotation || 'Aucune annotation.',
+                    originalDescription: v.original_description || 'Aucune description originale.'
+                }));
+
+                updateStatus('connected', `${currentVideos.length} vidéos`);
+                document.getElementById('videoCount').textContent = `${currentVideos.length} vidéo(s)`;
+                updateKeywordFilter();
+                filterAndDisplayVideos();
+
+            } catch (e) {
+                console.error('Erreur Supabase:', e);
+                updateStatus('disconnected', 'Erreur');
+                showUserMessage('Erreur de connexion: ' + e.message);
             }
         }
 
         // ============================================
-        // CHARGEMENT DES DONNÉES
+        // FILTRE PAR MOT-CLÉ
         // ============================================
+        function updateKeywordFilter() {
+            const allKeywords = new Set();
+            currentVideos.forEach(v => {
+                if (v.keywords) v.keywords.forEach(kw => allKeywords.add(kw));
+            });
 
-        async function loadVideos() {
-            gridLoader.classList.remove('hidden');
-            videoGrid.innerHTML = '';
-
-            try {
-                const params = new URLSearchParams();
-                if (searchInput.value) params.set('search', searchInput.value);
-                if (keywordFilter.value) params.set('keyword', keywordFilter.value);
-                if (themeFilter.value) params.set('theme', themeFilter.value);
-
-                const queryString = params.toString() ? '?' + params.toString() : '';
-                currentVideos = await apiRequest('/api/videos' + queryString);
-
-                displayVideos(currentVideos);
-            } catch (err) {
-                videoGrid.innerHTML = `<p class="col-span-full text-center text-red-500">
-                    <i class="fas fa-exclamation-circle mr-2"></i>Erreur de chargement: ${err.message}
-                </p>`;
-                showToast('Erreur de chargement des vidéos', 'error');
-            } finally {
-                gridLoader.classList.add('hidden');
-            }
-        }
-
-        async function loadThemes() {
-            try {
-                themes = await apiRequest('/api/themes');
-
-                // Mettre à jour le filtre de thèmes
-                themeFilter.innerHTML = '<option value="">Tous les thèmes</option>';
-                themes.forEach(theme => {
-                    themeFilter.innerHTML += `<option value="${theme.id}">${theme.name}</option>`;
-                });
-
-                // Mettre à jour le select du modal
-                const previewTheme = document.getElementById('previewTheme');
-                previewTheme.innerHTML = '<option value="">-- Sélectionner --</option>';
-                themes.forEach(theme => {
-                    previewTheme.innerHTML += `<option value="${theme.id}">${theme.name}</option>`;
-                });
-            } catch (err) {
-                console.error('Erreur chargement thèmes:', err);
-            }
-        }
-
-        async function loadKeywords() {
-            try {
-                const keywords = await apiRequest('/api/keywords');
-
-                keywordFilter.innerHTML = '<option value="">Tous les mots-clés</option>';
-                keywords.forEach(kw => {
-                    keywordFilter.innerHTML += `<option value="${kw}">${kw}</option>`;
-                });
-            } catch (err) {
-                console.error('Erreur chargement mots-clés:', err);
-            }
+            keywordFilter.innerHTML = '<option value="">Filtrer par mot-clé...</option>';
+            Array.from(allKeywords).sort().forEach(kw => {
+                const opt = document.createElement('option');
+                opt.value = kw;
+                opt.textContent = kw;
+                keywordFilter.appendChild(opt);
+            });
         }
 
         // ============================================
         // AFFICHAGE DES VIDÉOS
         // ============================================
+        function filterAndDisplayVideos() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedKeyword = keywordFilter.value;
 
-        function displayVideos(videosToDisplay) {
+            const filtered = currentVideos.filter(v => {
+                const matchesSearch = (
+                    v.title.toLowerCase().includes(searchTerm) ||
+                    v.uploader.toLowerCase().includes(searchTerm) ||
+                    v.aiSummary.toLowerCase().includes(searchTerm) ||
+                    v.adminDescription.toLowerCase().includes(searchTerm) ||
+                    v.keywords.some(kw => kw.toLowerCase().includes(searchTerm))
+                );
+                const matchesKeyword = !selectedKeyword || v.keywords.includes(selectedKeyword);
+                return matchesSearch && matchesKeyword;
+            });
+
+            displayVideos(filtered);
+        }
+
+        function displayVideos(videos) {
             videoGrid.innerHTML = '';
-            const videosToShow = showingAllVideos ? videosToDisplay : videosToDisplay.slice(0, initialDisplayCount);
+            const toShow = showingAllVideos ? videos : videos.slice(0, initialDisplayCount);
 
-            videoCountElem.textContent = `${videosToDisplay.length} vidéo${videosToDisplay.length > 1 ? 's' : ''}`;
-
-            if (videosToShow.length === 0) {
-                videoGrid.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8"><i class="fas fa-video-slash mr-2"></i>Aucune vidéo ne correspond à vos critères.</p>';
+            if (toShow.length === 0) {
+                videoGrid.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8"><i class="fas fa-video-slash text-4xl mb-4 block"></i>Aucune vidéo ne correspond à vos critères.</p>';
                 viewMoreButton.classList.add('hidden');
                 return;
             }
 
-            videosToShow.forEach(video => {
+            toShow.forEach(v => {
                 const card = document.createElement('div');
                 card.className = 'video-card rounded-lg shadow-lg overflow-hidden flex flex-col';
 
-                const thumbnailUrl = video.thumbnailUrl ||
-                    `https://img.youtube.com/vi/${video.youtubeVideoId}/hqdefault.jpg`;
-
-                const keywordsHtml = (video.keywords || []).slice(0, 4).map(kw =>
-                    `<span class="keyword-tag">${kw}</span>`
-                ).join('');
-
-                const themeHtml = video.theme ?
-                    `<span class="theme-badge" style="background-color: ${video.theme.color}">${video.theme.name}</span>` : '';
+                const thumbnailUrl = getThumbnailUrl(v.youtubeVideoId);
+                const keywordsHtml = v.keywords.slice(0, 5).map(kw => `<span class="keyword-tag">${kw}</span>`).join('');
 
                 card.innerHTML = `
                     <div class="video-thumbnail-container">
-                        ${themeHtml}
-                        <img src="${thumbnailUrl}" alt="${video.title}" loading="lazy" onerror="this.src='https://placehold.co/400x225/e0e0e0/999?text=Miniature'">
+                        <img src="${thumbnailUrl}" alt="${v.title}" loading="lazy" onerror="this.src='https://placehold.co/400x300/003366/ffffff?text=Vidéo'">
                     </div>
                     <div class="p-4 flex-grow flex flex-col">
-                        <h3 class="font-semibold text-lg mb-1 line-clamp-2" title="${video.title}">${video.title}</h3>
-                        <p class="text-gray-600 text-sm mb-2">${video.uploader || 'ISC'} • ${formatViews(video.views)}</p>
-                        
-                        <p class="text-gray-700 text-sm mb-3 line-clamp-2" title="${video.aiSummary || ''}">
-                            ${video.aiSummary || 'Aucun résumé disponible.'}
-                        </p>
-                        
+                        <h3 class="font-semibold text-lg mb-1 truncate" title="${v.title}">${v.title}</h3>
+                        <p class="text-gray-600 text-sm mb-2">${v.uploader} • ${v.views} vues</p>
+                        <p class="text-gray-700 text-sm mb-3 line-clamp-3" title="${v.aiSummary}">${v.aiSummary}</p>
                         <div class="mb-3 flex flex-wrap">${keywordsHtml}</div>
-
-                        <div class="mt-auto pt-2 flex items-center admin-controls ${isAdmin ? '' : 'hidden'}">
-                             <button class="edit-video-btn text-xs text-blue-600 hover:text-blue-800 mr-3" data-id="${video.id}">
-                                 <i class="fas fa-edit mr-1"></i>Modifier
-                             </button>
-                             <button class="delete-video-btn text-xs text-red-600 hover:text-red-800" data-id="${video.id}">
-                                 <i class="fas fa-trash mr-1"></i>Supprimer
-                             </button>
+                        <div class="mt-auto pt-2 flex items-center ${isAdmin ? '' : 'hidden'}">
+                             <button class="edit-btn text-xs text-blue-600 hover:text-blue-800 mr-3" data-id="${v.id}"><i class="fas fa-edit"></i> Modifier</button>
+                             <button class="delete-btn text-xs text-red-600 hover:text-red-800" data-id="${v.id}"><i class="fas fa-trash"></i> Supprimer</button>
                         </div>
                     </div>
                 `;
 
-                card.addEventListener('click', (e) => {
-                    if (!e.target.closest('.edit-video-btn') && !e.target.closest('.delete-video-btn')) {
-                        showVideoPlayer(video);
-                    }
+                card.addEventListener('click', e => {
+                    if (!e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) showVideoPlayer(v);
                 });
 
                 if (isAdmin) {
-                    card.querySelector('.edit-video-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditVideoModal(video.id);
-                    });
-                    card.querySelector('.delete-video-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        confirmDeleteVideo(video.id);
-                    });
+                    card.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); openEditModal(v.id); });
+                    card.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); confirmDeleteVideo(v.id, v.title); });
                 }
-
                 videoGrid.appendChild(card);
             });
 
-            if (videosToDisplay.length > initialDisplayCount) {
-                viewMoreButton.classList.remove('hidden');
-                viewMoreButton.textContent = showingAllVideos
-                    ? 'Voir Moins'
-                    : `Voir Toutes les Vidéos (${videosToDisplay.length})`;
-            } else {
-                viewMoreButton.classList.add('hidden');
-            }
+            viewMoreButton.classList.toggle('hidden', videos.length <= initialDisplayCount);
+            viewMoreButton.textContent = showingAllVideos ? 'Voir Moins' : `Voir Toutes les Vidéos (${videos.length})`;
         }
 
-        viewMoreButton.addEventListener('click', () => {
-            showingAllVideos = !showingAllVideos;
-            displayVideos(currentVideos);
-        });
+        viewMoreButton.addEventListener('click', () => { showingAllVideos = !showingAllVideos; filterAndDisplayVideos(); });
 
         // ============================================
-        // PAGE DE DÉTAIL VIDÉO
+        // LECTEUR VIDÉO & PARTAGE
         // ============================================
-
-        function showVideoPlayer(video) {
-            currentVideoId = video.id;
-
+        function showVideoPlayer(v) {
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            if (video.youtubeVideoId) {
-                mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${video.youtubeVideoId}?autoplay=1&rel=0`;
-            } else {
-                mainVideoPlayerIframe.src = '';
-            }
+            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0`;
 
-            videoTitleElem.textContent = video.title;
-            videoUploaderElem.textContent = video.uploader || 'ISC';
-            videoViewsElem.textContent = formatViews(video.views);
+            videoTitleElem.textContent = v.title;
+            videoUploaderElem.textContent = v.uploader;
+            videoViewsElem.textContent = v.views;
+            videoAiSummaryElem.textContent = v.aiSummary;
+            videoAdminAnnotationElem.textContent = v.adminDescription;
+            videoOriginalDescriptionElem.textContent = v.originalDescription;
 
-            if (video.theme) {
-                videoThemeElem.textContent = video.theme.name;
-                videoThemeElem.style.backgroundColor = video.theme.color;
-                videoThemeElem.classList.remove('hidden');
-            } else {
-                videoThemeElem.classList.add('hidden');
-            }
+            videoKeywordsContainerElem.innerHTML = v.keywords.length > 0
+                ? v.keywords.map(kw => `<span class="keyword-tag-detail">${kw}</span>`).join('')
+                : '<p class="text-gray-500">Aucun mot-clé.</p>';
 
-            videoAiSummaryElem.textContent = video.aiSummary || 'Aucun résumé généré disponible.';
-            videoAdminAnnotationElem.textContent = video.adminDescription || 'Aucune annotation de l\'administrateur.';
-            videoOriginalDescriptionElem.textContent = video.originalDescription || 'Aucune description originale disponible.';
+            // URLs de partage
+            const pageUrl = encodeURIComponent(window.location.href.split('#')[0] + '#video=' + v.id);
+            const shareText = encodeURIComponent(v.title);
+            const youtubeUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${v.youtubeVideoId}`);
 
-            videoKeywordsContainerElem.innerHTML = '';
-            if (video.keywords && video.keywords.length > 0) {
-                video.keywords.forEach(kw => {
-                    videoKeywordsContainerElem.innerHTML += `<span class="keyword-tag-detail">${kw}</span>`;
-                });
-            } else {
-                videoKeywordsContainerElem.innerHTML = '<p class="text-gray-500">Aucun mot-clé.</p>';
-            }
-
-            // Boutons admin
-            videoDetailAdminBtns.classList.toggle('hidden', !isAdmin);
-
-            // Mise à jour des boutons de partage
-            const pageUrl = window.location.origin + window.location.pathname + '#video=' + video.id;
-            const shareTitle = encodeURIComponent(video.title);
-            const shareText = encodeURIComponent(`Regardez cette vidéo: ${video.title}`);
-
-            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
-            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${shareText}`;
-            document.getElementById('shareLinkedIn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
-            document.getElementById('shareWhatsApp').href = `https://wa.me/?text=${shareText}%20${encodeURIComponent(pageUrl)}`;
-            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${shareText}`;
-            document.getElementById('shareEmail').href = `mailto:?subject=${shareTitle}&body=${shareText}%0A%0A${encodeURIComponent(pageUrl)}`;
+            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`;
+            document.getElementById('shareLinkedIn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
+            document.getElementById('shareWhatsApp').href = `https://wa.me/?text=${shareText}%20${pageUrl}`;
+            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${pageUrl}&text=${shareText}`;
+            document.getElementById('shareEmail').href = `mailto:?subject=${shareText}&body=Regardez%20cette%20vid%C3%A9o%3A%20${pageUrl}`;
 
             document.getElementById('copyLinkButton').onclick = () => {
-                navigator.clipboard.writeText(pageUrl).then(() => {
-                    showToast('Lien copié dans le presse-papiers!', 'success');
-                }).catch(() => {
-                    // Fallback pour navigateurs anciens
-                    const tempInput = document.createElement('input');
-                    tempInput.value = pageUrl;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    showToast('Lien copié!', 'success');
-                });
+                navigator.clipboard.writeText(decodeURIComponent(pageUrl));
+                showUserMessage('Lien copié dans le presse-papiers !');
             };
 
             window.scrollTo(0, 0);
-            window.location.hash = 'video=' + video.id;
         }
 
         function showHomePage() {
             videoPlayerPage.classList.add('hidden');
             videoGridPage.classList.remove('hidden');
             mainVideoPlayerIframe.src = '';
-            currentVideoId = null;
-            window.location.hash = '';
+            searchInput.value = '';
+            keywordFilter.value = '';
+            showingAllVideos = false;
+            filterAndDisplayVideos();
         }
 
-        // Boutons admin sur page détail
-        document.getElementById('editCurrentVideoBtn').addEventListener('click', () => {
-            if (currentVideoId) openEditVideoModal(currentVideoId);
-        });
-
-        document.getElementById('deleteCurrentVideoBtn').addEventListener('click', () => {
-            if (currentVideoId) confirmDeleteVideo(currentVideoId);
-        });
-
         // ============================================
-        // AUTHENTIFICATION ADMIN
+        // ADMIN
         // ============================================
-
-        function checkStoredAuth() {
-            const storedToken = localStorage.getItem('isc_admin_token');
-            if (storedToken) {
-                adminToken = storedToken;
-                apiRequest('/api/auth/verify')
-                    .then(() => {
-                        toggleAdminControls(true);
-                    })
-                    .catch(() => {
-                        localStorage.removeItem('isc_admin_token');
-                        adminToken = null;
-                    });
-            }
-        }
-
-        function toggleAdminControls(show) {
-            isAdmin = show;
-            addYoutubeVideoBtn.classList.toggle('hidden', !show);
-            adminLoginButton.innerHTML = show
-                ? '<i class="fas fa-sign-out-alt mr-1"></i>Déconnexion'
-                : '<i class="fas fa-lock mr-1"></i>Accès Admin';
-
-            // Affiche/cache les contrôles admin sur les cartes
-            document.querySelectorAll('.admin-controls').forEach(el => {
-                el.classList.toggle('hidden', !show);
-            });
-
-            // Affiche/cache les boutons sur la page de détail
-            videoDetailAdminBtns.classList.toggle('hidden', !show);
+        function toggleAdmin(on) {
+            isAdmin = on;
+            addYoutubeVideoBtn.classList.toggle('hidden', !on);
+            adminLoginButton.textContent = on ? 'Déconnexion Admin' : 'Accès Admin';
+            filterAndDisplayVideos();
         }
 
         adminLoginButton.addEventListener('click', () => {
-            if (isAdmin) {
-                adminToken = null;
-                localStorage.removeItem('isc_admin_token');
-                toggleAdminControls(false);
-                showToast('Déconnecté avec succès', 'info');
-            } else {
-                showModal(document.getElementById('adminLoginModal'));
-            }
+            if (isAdmin) { toggleAdmin(false); showUserMessage('Déconnecté.'); }
+            else showModal(adminLoginModal);
         });
 
-        document.getElementById('closeAdminLoginModal').addEventListener('click', () => {
-            hideModal(document.getElementById('adminLoginModal'));
-        });
+        document.getElementById('closeAdminLoginModal').addEventListener('click', () => hideModal(adminLoginModal));
 
-        document.getElementById('submitAdminLogin').addEventListener('click', async () => {
-            const password = document.getElementById('adminPassword').value;
-            if (!password) {
-                showToast('Veuillez entrer un mot de passe', 'error');
-                return;
-            }
-
-            try {
-                const response = await apiRequest('/api/auth/login', {
-                    method: 'POST',
-                    body: JSON.stringify({ password })
-                });
-
-                adminToken = response.token;
-                localStorage.setItem('isc_admin_token', adminToken);
-                toggleAdminControls(true);
-                hideModal(document.getElementById('adminLoginModal'));
+        document.getElementById('submitAdminLogin').addEventListener('click', () => {
+            if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
+                toggleAdmin(true);
+                hideModal(adminLoginModal);
+                showUserMessage('Connecté en tant qu\'administrateur.');
                 document.getElementById('adminPassword').value = '';
-                showToast('Connecté en tant qu\'administrateur', 'success');
-
-                // Rafraîchir pour afficher les boutons admin
-                displayVideos(currentVideos);
-            } catch (err) {
-                showToast(err.message || 'Mot de passe incorrect', 'error');
-            }
+            } else showUserMessage('Mot de passe incorrect.');
         });
 
-        // Permettre la connexion avec Enter
+        // Connexion avec Enter
         document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('submitAdminLogin').click();
-            }
+            if (e.key === 'Enter') document.getElementById('submitAdminLogin').click();
         });
 
         // ============================================
-        // GESTION DES VIDÉOS (CRUD)
+        // CRUD VIDÉOS
         // ============================================
-
-        // Ouvrir modal d'ajout
         addYoutubeVideoBtn.addEventListener('click', () => {
+            document.getElementById('modalTitle').innerHTML = '<i class="fab fa-youtube mr-2 text-red-500"></i>Ajouter une Vidéo YouTube';
             document.getElementById('youtubeVideoUrl').value = '';
+            document.getElementById('videoTitleInput').value = '';
+            document.getElementById('videoUploaderInput').value = '';
+            document.getElementById('videoKeywordsInput').value = '';
+            document.getElementById('videoAiSummaryInput').value = '';
             document.getElementById('adminCustomDescription').value = '';
+            document.getElementById('originalDescriptionInput').value = '';
             document.getElementById('editingVideoId').value = '';
-            document.getElementById('youtubeInfoPreview').classList.add('hidden');
-            document.getElementById('previewThumbnail').src = '';
-            document.getElementById('previewTitle').value = '';
-            document.getElementById('previewChannel').value = '';
-            document.getElementById('previewAiSummary').value = '';
-            document.getElementById('previewKeywords').value = '';
-            document.getElementById('previewTheme').value = '';
-            document.getElementById('videoModalTitle').innerHTML = '<i class="fab fa-youtube mr-2"></i>Ajouter une Vidéo YouTube';
-            showModal(document.getElementById('addYoutubeVideoModal'));
+            document.getElementById('deleteVideoBtn').classList.add('hidden');
+            showModal(addYoutubeVideoModal);
         });
 
-        document.getElementById('closeAddYoutubeVideoModal').addEventListener('click', () => {
-            hideModal(document.getElementById('addYoutubeVideoModal'));
-        });
+        document.getElementById('closeAddYoutubeVideoModal').addEventListener('click', () => hideModal(addYoutubeVideoModal));
 
-        // Récupérer infos YouTube
-        document.getElementById('fetchYoutubeInfoBtn').addEventListener('click', async () => {
-            const url = document.getElementById('youtubeVideoUrl').value;
-            const videoId = getYouTubeVideoId(url);
-
-            if (!videoId) {
-                showToast('URL YouTube invalide', 'error');
-                return;
-            }
-
-            try {
-                const info = await apiRequest(`/api/youtube-info/${videoId}`);
-
-                document.getElementById('previewTitle').value = info.title || '';
-                document.getElementById('previewChannel').value = info.channelTitle || '';
-                document.getElementById('previewThumbnail').src = info.thumbnail ||
-                    `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                document.getElementById('previewAiSummary').value = info.description?.substring(0, 500) || '';
-                document.getElementById('previewKeywords').value = (info.tags || []).slice(0, 10).join(', ');
-
-                document.getElementById('youtubeInfoPreview').classList.remove('hidden');
-                showToast('Informations récupérées!', 'success');
-            } catch (err) {
-                // Fallback si l'API ne fonctionne pas
-                document.getElementById('previewTitle').value = `Vidéo YouTube`;
-                document.getElementById('previewChannel').value = 'Chaîne YouTube';
-                document.getElementById('previewThumbnail').src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                document.getElementById('previewAiSummary').value = '';
-                document.getElementById('previewKeywords').value = '';
-                document.getElementById('youtubeInfoPreview').classList.remove('hidden');
-                showToast('Remplissez les informations manuellement', 'info');
-            }
-        });
-
-        // Sauvegarder vidéo
         document.getElementById('saveYoutubeVideoBtn').addEventListener('click', async () => {
             const url = document.getElementById('youtubeVideoUrl').value;
-            const youtubeVideoId = getYouTubeVideoId(url);
-            const editingId = document.getElementById('editingVideoId').value;
+            const title = document.getElementById('videoTitleInput').value.trim();
+            const uploader = document.getElementById('videoUploaderInput').value.trim();
+            const keywordsStr = document.getElementById('videoKeywordsInput').value;
+            const aiSummary = document.getElementById('videoAiSummaryInput').value.trim();
+            const annotation = document.getElementById('adminCustomDescription').value.trim();
+            const originalDesc = document.getElementById('originalDescriptionInput').value.trim();
+            const editId = document.getElementById('editingVideoId').value;
+            const ytId = getYouTubeVideoId(url);
 
-            if (!youtubeVideoId) {
-                showToast('URL YouTube invalide', 'error');
-                return;
-            }
+            if (!ytId) return showUserMessage('URL YouTube invalide. Utilisez le format youtube.com/watch?v=...');
+            if (!title) return showUserMessage('Le titre est requis.');
 
-            const videoData = {
-                youtubeVideoId,
-                title: document.getElementById('previewTitle').value || `Vidéo ${youtubeVideoId}`,
-                uploader: document.getElementById('previewChannel').value || 'ISC Channel',
-                aiSummary: document.getElementById('previewAiSummary').value || '',
-                keywords: document.getElementById('previewKeywords').value.split(',').map(kw => kw.trim()).filter(Boolean),
-                adminAnnotation: document.getElementById('adminCustomDescription').value || '',
-                themeId: document.getElementById('previewTheme').value || null
-            };
+            document.getElementById('saveBtnText').classList.add('hidden');
+            document.getElementById('saveBtnSpinner').classList.remove('hidden');
 
             try {
-                if (editingId) {
-                    await apiRequest(`/api/admin/videos/${editingId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(videoData)
-                    });
-                    showToast('Vidéo mise à jour!', 'success');
+                const keywords = keywordsStr.split(',').map(k => k.trim()).filter(Boolean);
+                const payload = {
+                    youtube_video_id: ytId,
+                    title,
+                    uploader: uploader || 'ISC Channel',
+                    keywords,
+                    ai_summary: aiSummary,
+                    admin_annotation: annotation,
+                    original_description: originalDesc,
+                    thumbnail_url: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+                    is_published: true
+                };
+
+                if (editId) {
+                    const { error } = await supabaseClient.from('videos').update(payload).eq('id', editId);
+                    if (error) throw error;
+                    showUserMessage('Vidéo mise à jour avec succès !');
                 } else {
-                    await apiRequest('/api/admin/videos', {
-                        method: 'POST',
-                        body: JSON.stringify(videoData)
-                    });
-                    showToast('Vidéo ajoutée!', 'success');
+                    const { error } = await supabaseClient.from('videos').insert([payload]);
+                    if (error) throw error;
+                    showUserMessage('Vidéo ajoutée avec succès !');
                 }
-
-                hideModal(document.getElementById('addYoutubeVideoModal'));
-                await loadVideos();
-                await loadKeywords();
-            } catch (err) {
-                showToast(err.message || 'Erreur lors de la sauvegarde', 'error');
+                hideModal(addYoutubeVideoModal);
+                await loadVideosFromSupabase();
+            } catch (e) {
+                showUserMessage('Erreur: ' + e.message);
+            } finally {
+                document.getElementById('saveBtnText').classList.remove('hidden');
+                document.getElementById('saveBtnSpinner').classList.add('hidden');
             }
         });
 
-        // Ouvrir modal d'édition
-        function openEditVideoModal(videoId) {
-            const video = currentVideos.find(v => v.id === videoId);
-            if (!video) return;
-
-            document.getElementById('youtubeVideoUrl').value = `https://www.youtube.com/watch?v=${video.youtubeVideoId}`;
-            document.getElementById('adminCustomDescription').value = video.adminDescription || '';
-            document.getElementById('editingVideoId').value = video.id;
-
-            document.getElementById('previewTitle').value = video.title;
-            document.getElementById('previewChannel').value = video.uploader || '';
-            document.getElementById('previewThumbnail').src = video.thumbnailUrl ||
-                `https://img.youtube.com/vi/${video.youtubeVideoId}/hqdefault.jpg`;
-            document.getElementById('previewAiSummary').value = video.aiSummary || '';
-            document.getElementById('previewKeywords').value = (video.keywords || []).join(', ');
-            document.getElementById('previewTheme').value = video.theme?.id || '';
-
-            document.getElementById('youtubeInfoPreview').classList.remove('hidden');
-            document.getElementById('videoModalTitle').innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier la Vidéo';
-            showModal(document.getElementById('addYoutubeVideoModal'));
+        function openEditModal(id) {
+            const v = currentVideos.find(x => x.id === id);
+            if (!v) return;
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier la Vidéo';
+            document.getElementById('youtubeVideoUrl').value = `https://youtube.com/watch?v=${v.youtubeVideoId}`;
+            document.getElementById('videoTitleInput').value = v.title;
+            document.getElementById('videoUploaderInput').value = v.uploader;
+            document.getElementById('videoKeywordsInput').value = v.keywords.join(', ');
+            document.getElementById('videoAiSummaryInput').value = v.aiSummary !== 'Aucun résumé disponible.' ? v.aiSummary : '';
+            document.getElementById('adminCustomDescription').value = v.adminDescription !== 'Aucune annotation.' ? v.adminDescription : '';
+            document.getElementById('originalDescriptionInput').value = v.originalDescription !== 'Aucune description originale.' ? v.originalDescription : '';
+            document.getElementById('editingVideoId').value = v.id;
+            document.getElementById('deleteVideoBtn').classList.remove('hidden');
+            showModal(addYoutubeVideoModal);
         }
 
-        // Confirmation de suppression
-        let videoToDeleteId = null;
-
-        function confirmDeleteVideo(videoId) {
-            videoToDeleteId = videoId;
-            showModal(document.getElementById('deleteConfirmModal'));
-        }
-
-        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
-            videoToDeleteId = null;
-            hideModal(document.getElementById('deleteConfirmModal'));
+        document.getElementById('deleteVideoBtn').addEventListener('click', () => {
+            const editId = document.getElementById('editingVideoId').value;
+            if (editId) {
+                hideModal(addYoutubeVideoModal);
+                const v = currentVideos.find(x => x.id === editId);
+                confirmDeleteVideo(editId, v?.title || 'cette vidéo');
+            }
         });
 
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
-            if (!videoToDeleteId) return;
+        function confirmDeleteVideo(id, title) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer "${title}" ?\n\nCette action est irréversible.`)) {
+                deleteVideo(id);
+            }
+        }
 
+        async function deleteVideo(id) {
             try {
-                await apiRequest(`/api/admin/videos/${videoToDeleteId}`, {
-                    method: 'DELETE'
-                });
-
-                showToast('Vidéo supprimée!', 'success');
-                hideModal(document.getElementById('deleteConfirmModal'));
-
-                // Si on est sur la page de détail, retourner à la grille
-                if (currentVideoId === videoToDeleteId) {
-                    showHomePage();
-                }
-
-                await loadVideos();
-                await loadKeywords();
-                videoToDeleteId = null;
-            } catch (err) {
-                showToast(err.message || 'Erreur lors de la suppression', 'error');
-            }
-        });
-
-        // ============================================
-        // FILTRES ET RECHERCHE
-        // ============================================
-
-        let searchTimeout;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(loadVideos, 300); // Debounce
-        });
-
-        keywordFilter.addEventListener('change', loadVideos);
-        themeFilter.addEventListener('change', loadVideos);
-
-        // ============================================
-        // GESTION DE L'URL (DEEP LINKING)
-        // ============================================
-
-        function handleUrlHash() {
-            const hash = window.location.hash;
-            if (hash.startsWith('#video=')) {
-                const videoId = hash.replace('#video=', '');
-                const video = currentVideos.find(v => v.id === videoId);
-                if (video) {
-                    showVideoPlayer(video);
-                }
+                const { error } = await supabaseClient.from('videos').delete().eq('id', id);
+                if (error) throw error;
+                showUserMessage('Vidéo supprimée avec succès.');
+                await loadVideosFromSupabase();
+            } catch (e) {
+                showUserMessage('Erreur lors de la suppression: ' + e.message);
             }
         }
-
-        window.addEventListener('hashchange', handleUrlHash);
 
         // ============================================
         // INITIALISATION
         // ============================================
+        searchInput.addEventListener('input', filterAndDisplayVideos);
+        keywordFilter.addEventListener('change', filterAndDisplayVideos);
+        modalCloseButton.addEventListener('click', () => hideModal(messageModal));
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            checkStoredAuth();
-            await loadThemes();
-            await loadKeywords();
-            await loadVideos();
-            handleUrlHash();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideosFromSupabase();
         });
     </script>
 </body>
