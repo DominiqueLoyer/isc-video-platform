@@ -1,6 +1,6 @@
 /**
  * Plateforme Vidéo ISC - Backend API
- * Version 2.0 - Supabase Integration
+ * Version 2.1 - Supabase Integration & Gemini JSON
  * 
  * Endpoints:
  * - GET  /api/videos          - Liste toutes les vidéos (avec filtres)
@@ -11,6 +11,7 @@
  * - POST /api/admin/videos    - Ajouter une vidéo (admin)
  * - PUT  /api/admin/videos/:id - Modifier une vidéo (admin)
  * - DELETE /api/admin/videos/:id - Supprimer une vidéo (admin)
+ * - POST /api/generate-summary - Résumé Gemini + Mots-clés
  */
 
 import express from 'express';
@@ -36,6 +37,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const SUPABASE_SECRET = process.env.SUPABASE_SECRET || process.env.SUPABASE_KEY;
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Vérification des variables d'environnement
 if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -59,16 +61,14 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permet les requêtes sans origin (comme curl ou Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    // Permet aussi les sous-domaines de uqam.ca
     if (origin.endsWith('.uqam.ca')) {
       return callback(null, true);
     }
-    return callback(null, true); // Temporairement ouvert pour debug
+    return callback(null, true);
   },
   credentials: true
 }));
@@ -104,7 +104,6 @@ const verifyAdmin = async (req, res, next) => {
 /**
  * GET /api/videos
  * Liste toutes les vidéos avec filtres optionnels
- * Query params: keyword, search, theme
  */
 app.get('/api/videos', async (req, res) => {
   try {
@@ -117,17 +116,14 @@ app.get('/api/videos', async (req, res) => {
       .eq('is_published', true)
       .order('created_at', { ascending: false });
 
-    // Filtre par mot-clé
     if (req.query.keyword) {
       query = query.contains('keywords', [req.query.keyword]);
     }
 
-    // Filtre par thème
     if (req.query.theme) {
       query = query.eq('theme_id', req.query.theme);
     }
 
-    // Recherche textuelle
     if (req.query.search) {
       const search = `%${req.query.search}%`;
       query = query.or(`title.ilike.${search},uploader.ilike.${search},ai_summary.ilike.${search},admin_annotation.ilike.${search}`);
@@ -137,7 +133,6 @@ app.get('/api/videos', async (req, res) => {
 
     if (error) throw error;
 
-    // Transformer les données pour le frontend
     const videos = (data || []).map(v => ({
       id: v.id,
       youtubeVideoId: v.youtube_video_id,
@@ -179,7 +174,6 @@ app.get('/api/videos/:id', async (req, res) => {
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Vidéo non trouvée' });
 
-    // Transformer pour le frontend
     const video = {
       id: data.id,
       youtubeVideoId: data.youtube_video_id,
@@ -258,7 +252,7 @@ app.get('/api/youtube-info/:videoId', async (req, res) => {
     const stats = item.statistics;
     const content = item.contentDetails;
 
-    // Parser la durée ISO 8601 (PT1H2M3S -> 1:02:03)
+    // Parser la durée ISO 8601
     const duration = content.duration;
     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     let formattedDuration = 'N/A';
@@ -303,7 +297,6 @@ app.get('/api/keywords', async (req, res) => {
 
     if (error) throw error;
 
-    // Extraire tous les mots-clés uniques
     const allKeywords = new Set();
     (data || []).forEach(v => {
       (v.keywords || []).forEach(kw => allKeywords.add(kw));
@@ -317,13 +310,81 @@ app.get('/api/keywords', async (req, res) => {
 });
 
 // ============================================
-// ROUTES D'AUTHENTIFICATION
+// GÉNÉRATION DE RÉSUMÉ IA (GEMINI)
 // ============================================
 
 /**
- * POST /api/auth/login
- * Connexion administrateur
+ * POST /api/generate-summary
+ * Génère un résumé IA + mots-clés bilingues
  */
+app.post('/api/generate-summary', async (req, res) => {
+  const { title, description, channelTitle } = req.body;
+
+  if (!GEMINI_API_KEY) {
+    return res.status(503).json({
+      error: 'Gemini API non configurée',
+      simulated: true,
+      summary: `Cette vidéo "${title}" de ${channelTitle || 'la chaîne'} traite de sciences cognitives. [Résumé automatique non disponible]`,
+      keywords: ['Sciences Cognitives', 'IA', 'Recherche']
+    });
+  }
+
+  if (!title && !description) {
+    return res.status(400).json({ error: 'Titre ou description requis' });
+  }
+
+  try {
+    const prompt = `Tu es un assistant expert en sciences cognitives pour l'Institut des Sciences Cognitives (ISC) de l'UQAM.
+    
+Analyse les informations suivantes sur une vidéo YouTube :
+Titre: ${title}
+Chaîne: ${channelTitle || 'Non spécifié'}
+Description: ${description || 'Non disponible'}
+
+Tâche :
+1. Génère un résumé concis et informatif (3-5 phrases) en FRANÇAIS, ton professionnel académique.
+2. Extrais une liste de 5 à 8 mots-clés pertinents. IMPORTANT : Ces mots-clés doivent être un mélange de FRANÇAIS et d'ANGLAIS (bilingue) car les concepts techniques sont souvent en anglais.
+
+Réponds UNIQUEMENT au format JSON valide suivant, sans balises markdown :
+{
+  "summary": "Le résumé en français ici...",
+  "keywords": ["MotClé1", "Keyword2", "MotClé3", "Keyword4"]
+}`;
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const geminiResponse = await axios.post(geminiUrl, {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: "application/json"
+      }
+    });
+
+    const contentText = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let result = { summary: '', keywords: [] };
+
+    try {
+      result = JSON.parse(contentText);
+    } catch (e) {
+      console.error("Gemini JSON Parse Error:", contentText);
+      result.summary = contentText || 'Impossible de générer un résumé.';
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('Erreur Gemini API:', err.response?.data || err.message);
+    res.status(500).json({
+      error: 'Erreur lors de la génération du résumé',
+      details: err.response?.data?.error?.message || err.message
+    });
+  }
+});
+
+// ============================================
+// ROUTES D'AUTHENTIFICATION
+// ============================================
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { password } = req.body;
@@ -331,7 +392,6 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Mot de passe requis' });
     }
 
-    // Récupérer le hash du mot de passe admin
     const { data: settings, error: settingsError } = await supabase
       .from('admin_settings')
       .select('password_hash')
@@ -347,13 +407,11 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(500).json({ error: 'Paramètres admin non configurés' });
     }
 
-    // Vérifier le mot de passe
     const isValid = await bcrypt.compare(password, settings.password_hash);
     if (!isValid) {
       return res.status(401).json({ error: 'Mot de passe incorrect' });
     }
 
-    // Générer un token JWT
     const token = jwt.sign(
       { sub: 'admin', role: 'admin' },
       SUPABASE_SECRET,
@@ -367,10 +425,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-/**
- * GET /api/auth/verify
- * Vérifie si le token est valide
- */
 app.get('/api/auth/verify', verifyAdmin, (req, res) => {
   res.json({ valid: true, adminId: req.adminId });
 });
@@ -379,10 +433,6 @@ app.get('/api/auth/verify', verifyAdmin, (req, res) => {
 // ROUTES ADMIN (PROTÉGÉES)
 // ============================================
 
-/**
- * POST /api/admin/videos
- * Ajouter une nouvelle vidéo
- */
 app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
   try {
     const {
@@ -400,7 +450,6 @@ app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
       return res.status(400).json({ error: 'youtubeVideoId requis' });
     }
 
-    // Vérifier si la vidéo existe déjà
     const { data: existing } = await supabase
       .from('videos')
       .select('id')
@@ -411,10 +460,10 @@ app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Cette vidéo existe déjà dans la base de données' });
     }
 
-    // Récupérer les vues YouTube si l'API est configurée
     let views = 0;
     let thumbnailUrl = `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
 
+    // Utilisation de YouTube API uniquement si configurée
     if (YOUTUBE_API_KEY) {
       try {
         const ytResponse = await axios.get(
@@ -430,7 +479,6 @@ app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
       }
     }
 
-    // Insérer la vidéo
     const { data, error } = await supabase
       .from('videos')
       .insert([{
@@ -446,10 +494,7 @@ app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
         thumbnail_url: thumbnailUrl,
         is_published: true
       }])
-      .select(`
-        *,
-        themes (id, name, color)
-      `);
+      .select('*, themes(id, name, color)');
 
     if (error) throw error;
 
@@ -463,10 +508,6 @@ app.post('/api/admin/videos', verifyAdmin, async (req, res) => {
   }
 });
 
-/**
- * PUT /api/admin/videos/:id
- * Modifier une vidéo existante
- */
 app.put('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
   try {
     const { title, aiSummary, keywords, adminAnnotation, themeId, uploader } = req.body;
@@ -484,10 +525,7 @@ app.put('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
       .from('videos')
       .update(updateData)
       .eq('id', req.params.id)
-      .select(`
-        *,
-        themes (id, name, color)
-      `);
+      .select('*, themes(id, name, color)');
 
     if (error) throw error;
     if (!data || data.length === 0) {
@@ -501,10 +539,6 @@ app.put('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/admin/videos/:id
- * Supprimer une vidéo
- */
 app.delete('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
   try {
     const { error } = await supabase
@@ -544,5 +578,6 @@ app.listen(PORT, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);
   console.log(`📊 Supabase: ${SUPABASE_URL}`);
   console.log(`🔑 YouTube API: ${YOUTUBE_API_KEY ? 'Configurée' : 'Non configurée'}`);
+  console.log(`🤖 Gemini API: ${GEMINI_API_KEY ? 'Configurée' : 'Non configurée'}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
