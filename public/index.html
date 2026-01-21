@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plateforme de diffusion de l'institut des sciences cognitives</title>
-    <link rel="icon" href="clap_cine.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -96,82 +95,28 @@
             background-color: #1877F2;
         }
 
-        .share-x {
-            background-color: #000000;
+        .share-twitter {
+            background-color: #1DA1F2;
         }
 
         .share-linkedin {
             background-color: #0A66C2;
         }
 
-        .share-reddit {
-            background-color: #FF4500;
+        .share-whatsapp {
+            background-color: #25D366;
         }
 
-        .share-bluesky {
-            background-color: #1185FE;
+        .share-telegram {
+            background-color: #0088cc;
         }
 
-        .share-discord {
-            background-color: #5865F2;
-        }
-
-        .share-obsidian {
-            background-color: #7C3AED;
-        }
-
-        .share-notion {
-            background-color: #000000;
-        }
-
-        .share-instagram {
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-        }
-
-        .share-tiktok {
-            background-color: #000000;
+        .share-email {
+            background-color: #EA4335;
         }
 
         .share-copy {
             background-color: var(--uqam-light-blue);
-        }
-
-        /* Styles pour les thématiques */
-        .theme-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: white;
-            margin-top: 8px;
-        }
-
-        .theme-filter {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .theme-filter:hover {
-            transform: translateY(-1px);
-        }
-
-        .theme-filter.active {
-            border-color: var(--uqam-dark-blue);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .theme-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
         }
 
         .modal-overlay {
@@ -374,15 +319,6 @@
     </header>
 
     <main id="mainContent" class="container mx-auto p-4">
-        <!-- Filtres par thématique -->
-        <section id="themeFilters" class="mb-6 overflow-x-auto">
-            <div id="themeFiltersContainer" class="flex gap-2 pb-2 flex-wrap">
-                <button class="theme-filter active" data-theme="all" style="background-color: #e5e7eb; color: #374151;">
-                    <i class="fas fa-th"></i> Toutes
-                </button>
-            </div>
-        </section>
-
         <section id="videoGridPage">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-semibold text-gray-700">Vidéos disponibles</h2>
@@ -442,30 +378,18 @@
                     <div class="border-t pt-4">
                         <h3 class="text-lg font-semibold mb-3 text-gray-700">Partager :</h3>
                         <div id="shareButtonsContainer" class="flex flex-wrap">
-                            <a href="#" data-network="facebook" target="_blank"
-                                class="share-link share-button share-facebook"><i class="fab fa-facebook-f"></i>
-                                Facebook</a>
-                            <a href="#" data-network="x" target="_blank" class="share-link share-button share-x"><i
-                                    class="fab fa-x-twitter"></i> X</a>
-                            <a href="#" data-network="linkedin" target="_blank"
-                                class="share-link share-button share-linkedin"><i class="fab fa-linkedin-in"></i>
-                                LinkedIn</a>
-                            <a href="#" data-network="reddit" target="_blank"
-                                class="share-link share-button share-reddit"><i class="fab fa-reddit-alien"></i>
-                                Reddit</a>
-                            <a href="#" data-network="bluesky" target="_blank"
-                                class="share-link share-button share-bluesky"><i class="fas fa-cloud"></i> Bluesky</a>
-                            <a href="#" data-network="discord" target="_blank"
-                                class="share-link share-button share-discord"><i class="fab fa-discord"></i> Discord</a>
-                            <a href="#" data-network="obsidian" target="_blank"
-                                class="share-link share-button share-obsidian"><i class="fas fa-gem"></i> Obsidian</a>
-                            <a href="#" data-network="notion" target="_blank"
-                                class="share-link share-button share-notion"><i class="fas fa-file-alt"></i> Notion</a>
-                            <a href="#" data-network="instagram" target="_blank"
-                                class="share-link share-button share-instagram"><i class="fab fa-instagram"></i>
-                                Instagram</a>
-                            <a href="#" data-network="tiktok" target="_blank"
-                                class="share-link share-button share-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
+                            <a href="#" id="shareFacebook" target="_blank" class="share-button share-facebook"><i
+                                    class="fab fa-facebook-f"></i> Facebook</a>
+                            <a href="#" id="shareTwitter" target="_blank" class="share-button share-twitter"><i
+                                    class="fab fa-twitter"></i> Twitter</a>
+                            <a href="#" id="shareLinkedIn" target="_blank" class="share-button share-linkedin"><i
+                                    class="fab fa-linkedin-in"></i> LinkedIn</a>
+                            <a href="#" id="shareWhatsApp" target="_blank" class="share-button share-whatsapp"><i
+                                    class="fab fa-whatsapp"></i> WhatsApp</a>
+                            <a href="#" id="shareTelegram" target="_blank" class="share-button share-telegram"><i
+                                    class="fab fa-telegram-plane"></i> Telegram</a>
+                            <a href="#" id="shareEmail" class="share-button share-email"><i class="fas fa-envelope"></i>
+                                Email</a>
                             <button id="copyLinkButton" class="share-button share-copy"><i class="fas fa-link"></i>
                                 Copier lien</button>
                         </div>
@@ -476,8 +400,7 @@
     </main>
 
     <footer class="text-center p-4 mt-8 text-gray-600 border-t border-gray-300">
-        Creation <img src="peace.png" alt="Peace" style="height: 24px; vertical-align: middle; display: inline-block;">
-        Dominique Loyer MMXXVI
+        © 2025 Développement par Dominique S. Loyer, assistant de recherche ISC. Tous droits réservés.
     </footer>
 
     <div id="statusBadge" class="status-badge status-loading">
@@ -510,8 +433,16 @@
                 une Vidéo YouTube</h3>
 
             <label for="youtubeVideoUrl">URL YouTube :</label>
-            <input type="text" id="youtubeVideoUrl" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
-            <p class="help-text">Collez l'URL complète de la vidéo YouTube</p>
+            <div class="flex space-x-2 mb-2">
+                <input type="text" id="youtubeVideoUrl" placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+                    class="flex-1" style="margin-bottom: 0;">
+                <button type="button" id="fetchYoutubeInfoBtn"
+                    class="button-primary py-2 px-4 rounded-md whitespace-nowrap">
+                    <i class="fas fa-magic mr-1"></i><span id="fetchBtnText">Récupérer</span>
+                    <span id="fetchBtnSpinner" class="loading-spinner hidden"></span>
+                </button>
+            </div>
+            <p class="help-text">Collez l'URL puis cliquez sur "Récupérer" pour remplir automatiquement les champs</p>
 
             <label for="videoTitleInput">Titre :</label>
             <input type="text" id="videoTitleInput" placeholder="Titre de la vidéo">
@@ -552,6 +483,24 @@
         </div>
     </div>
 
+    <!-- Modal de confirmation de suppression (remplace window.confirm bloqué par iframe) -->
+    <div id="confirmDeleteModal" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <div class="text-red-500 text-5xl mb-4"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 class="text-xl font-semibold mb-2">Confirmer la suppression</h3>
+            <p id="confirmDeleteText" class="text-gray-600 mb-4">Êtes-vous sûr de vouloir supprimer cette vidéo ?</p>
+            <p class="text-sm text-red-500 mb-4">Cette action est irréversible.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirmDeleteYes" class="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600">
+                    <i class="fas fa-trash mr-2"></i>Supprimer
+                </button>
+                <button id="confirmDeleteNo" class="button-secondary py-2 px-6 rounded-md">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================
         // CONFIGURATION SUPABASE
@@ -570,8 +519,6 @@
         // ============================================
         let isAdmin = false;
         let currentVideos = [];
-        let allThemes = [];
-        let activeThemeFilter = 'all';
         const initialDisplayCount = 6;
         let showingAllVideos = false;
 
@@ -600,7 +547,6 @@
         const addYoutubeVideoModal = document.getElementById('addYoutubeVideoModal');
         const viewMoreButton = document.getElementById('viewMoreButton');
         const statusBadge = document.getElementById('statusBadge');
-        const themeFiltersContainer = document.getElementById('themeFiltersContainer');
 
         // ============================================
         // FONCTIONS UTILITAIRES
@@ -634,25 +580,76 @@
         }
 
         // ============================================
-        // SUPABASE - CHARGEMENT
+        // RÉCUPÉRATION MÉTADONNÉES YOUTUBE (oEmbed API)
         // ============================================
-        async function loadThemes() {
+        async function fetchYoutubeMetadata(url) {
+            const videoId = getYouTubeVideoId(url);
+            if (!videoId) {
+                throw new Error('URL YouTube invalide');
+            }
+
             try {
-                const { data, error } = await supabaseClient.from('themes').select('*').order('name');
-                if (error) { console.error('Erreur themes:', error); return; }
-                allThemes = data || [];
-                renderThemeFilters();
-            } catch (e) {
-                console.error('Erreur chargement thèmes:', e);
+                // Utilise l'API oEmbed de YouTube (pas besoin de clé API)
+                const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+                const response = await fetch(oembedUrl);
+
+                if (!response.ok) {
+                    throw new Error('Vidéo non trouvée ou privée');
+                }
+
+                const data = await response.json();
+
+                return {
+                    title: data.title || '',
+                    uploader: data.author_name || '',
+                    thumbnailUrl: data.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+                };
+            } catch (error) {
+                console.error('Erreur fetch oEmbed:', error);
+                throw new Error('Impossible de récupérer les informations de la vidéo');
             }
         }
 
+        // Bouton "Récupérer" les infos YouTube
+        document.getElementById('fetchYoutubeInfoBtn').addEventListener('click', async () => {
+            const url = document.getElementById('youtubeVideoUrl').value.trim();
+
+            if (!url) {
+                showUserMessage('Veuillez d\'abord coller une URL YouTube.');
+                return;
+            }
+
+            // Affiche le spinner
+            document.getElementById('fetchBtnText').classList.add('hidden');
+            document.getElementById('fetchBtnSpinner').classList.remove('hidden');
+
+            try {
+                const metadata = await fetchYoutubeMetadata(url);
+
+                // Remplit automatiquement les champs
+                document.getElementById('videoTitleInput').value = metadata.title;
+                document.getElementById('videoUploaderInput').value = metadata.uploader;
+
+                showUserMessage(`✅ Informations récupérées !\n\nTitre: ${metadata.title}\nChaîne: ${metadata.uploader}`);
+            } catch (error) {
+                showUserMessage('❌ ' + error.message);
+            } finally {
+                // Cache le spinner
+                document.getElementById('fetchBtnText').classList.remove('hidden');
+                document.getElementById('fetchBtnSpinner').classList.add('hidden');
+            }
+        });
+
+
+        // ============================================
+        // SUPABASE - CHARGEMENT
+        // ============================================
         async function loadVideosFromSupabase() {
             updateStatus('loading', 'Chargement...');
             try {
                 const { data, error } = await supabaseClient
                     .from('videos')
-                    .select('*, themes(id, name, color)')
+                    .select('*')
                     .eq('is_published', true)
                     .order('created_at', { ascending: false });
 
@@ -668,8 +665,7 @@
                     aiSummary: v.ai_summary || 'Aucun résumé disponible.',
                     keywords: v.keywords || [],
                     adminDescription: v.admin_annotation || 'Aucune annotation.',
-                    originalDescription: v.original_description || 'Aucune description originale.',
-                    theme: v.themes
+                    originalDescription: v.original_description || 'Aucune description originale.'
                 }));
 
                 updateStatus('connected', `${currentVideos.length} vidéos`);
@@ -682,36 +678,6 @@
                 updateStatus('disconnected', 'Erreur');
                 showUserMessage('Erreur de connexion: ' + e.message);
             }
-        }
-
-        // ============================================
-        // THÉMATIQUES - FILTRES
-        // ============================================
-        function renderThemeFilters() {
-            themeFiltersContainer.innerHTML = `
-                <button class="theme-filter ${activeThemeFilter === 'all' ? 'active' : ''}" 
-                        data-theme="all" style="background-color: #e5e7eb; color: #374151;">
-                    <i class="fas fa-th"></i> Toutes
-                </button>
-            `;
-            allThemes.forEach(t => {
-                const btn = document.createElement('button');
-                btn.className = `theme-filter ${activeThemeFilter === t.id ? 'active' : ''}`;
-                btn.dataset.theme = t.id;
-                btn.style.backgroundColor = t.color + '20';
-                btn.style.color = t.color;
-                btn.innerHTML = `<span class="theme-dot" style="background-color:${t.color}"></span>${t.name}`;
-                themeFiltersContainer.appendChild(btn);
-            });
-            document.querySelectorAll('.theme-filter').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    activeThemeFilter = btn.dataset.theme;
-                    document.querySelectorAll('.theme-filter').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    showingAllVideos = false;
-                    filterAndDisplayVideos();
-                });
-            });
         }
 
         // ============================================
@@ -748,8 +714,7 @@
                     v.keywords.some(kw => kw.toLowerCase().includes(searchTerm))
                 );
                 const matchesKeyword = !selectedKeyword || v.keywords.includes(selectedKeyword);
-                const matchesTheme = activeThemeFilter === 'all' || v.theme?.id === activeThemeFilter;
-                return matchesSearch && matchesKeyword && matchesTheme;
+                return matchesSearch && matchesKeyword;
             });
 
             displayVideos(filtered);
@@ -771,7 +736,6 @@
 
                 const thumbnailUrl = getThumbnailUrl(v.youtubeVideoId);
                 const keywordsHtml = v.keywords.slice(0, 5).map(kw => `<span class="keyword-tag">${kw}</span>`).join('');
-                const themeBadgeHtml = v.theme ? `<span class="theme-badge" style="background-color:${v.theme.color}">${v.theme.name}</span>` : '';
 
                 card.innerHTML = `
                     <div class="video-thumbnail-container">
@@ -780,7 +744,6 @@
                     <div class="p-4 flex-grow flex flex-col">
                         <h3 class="font-semibold text-lg mb-1 truncate" title="${v.title}">${v.title}</h3>
                         <p class="text-gray-600 text-sm mb-2">${v.uploader} • ${v.views} vues</p>
-                        ${themeBadgeHtml}
                         <p class="text-gray-700 text-sm mb-3 line-clamp-3" title="${v.aiSummary}">${v.aiSummary}</p>
                         <div class="mb-3 flex flex-wrap">${keywordsHtml}</div>
                         <div class="mt-auto pt-2 flex items-center ${isAdmin ? '' : 'hidden'}">
@@ -827,29 +790,17 @@
                 ? v.keywords.map(kw => `<span class="keyword-tag-detail">${kw}</span>`).join('')
                 : '<p class="text-gray-500">Aucun mot-clé.</p>';
 
-            // URLs de partage - Configuration des réseaux sociaux
+            // URLs de partage
             const pageUrl = encodeURIComponent(window.location.href.split('#')[0] + '#video=' + v.id);
-            const pageTitle = encodeURIComponent(v.title);
+            const shareText = encodeURIComponent(v.title);
+            const youtubeUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${v.youtubeVideoId}`);
 
-            const shareUrls = {
-                reddit: `https://www.reddit.com/submit?url=${pageUrl}&title=${pageTitle}`,
-                bluesky: `https://bsky.app/intent/compose?text=${pageTitle}%20${pageUrl}`,
-                linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`,
-                x: `https://x.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`,
-                facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
-                discord: `https://discord.gg/PT4Nzkgw`,
-                obsidian: `obsidian://new?content=${pageTitle}%0A${pageUrl}`,
-                notion: `https://www.notion.so/new`,
-                instagram: `https://www.instagram.com/`,
-                tiktok: `https://www.tiktok.com/`
-            };
-
-            document.querySelectorAll('.share-link').forEach(link => {
-                const network = link.dataset.network;
-                if (shareUrls[network]) {
-                    link.href = shareUrls[network];
-                }
-            });
+            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`;
+            document.getElementById('shareLinkedIn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
+            document.getElementById('shareWhatsApp').href = `https://wa.me/?text=${shareText}%20${pageUrl}`;
+            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${pageUrl}&text=${shareText}`;
+            document.getElementById('shareEmail').href = `mailto:?subject=${shareText}&body=Regardez%20cette%20vid%C3%A9o%3A%20${pageUrl}`;
 
             document.getElementById('copyLinkButton').onclick = () => {
                 navigator.clipboard.writeText(decodeURIComponent(pageUrl));
@@ -994,11 +945,30 @@
             }
         });
 
+        // Variable pour stocker l'ID de la vidéo à supprimer
+        let pendingDeleteId = null;
+
         function confirmDeleteVideo(id, title) {
-            if (confirm(`Êtes-vous sûr de vouloir supprimer "${title}" ?\n\nCette action est irréversible.`)) {
-                deleteVideo(id);
-            }
+            // Utilise une modale HTML au lieu de window.confirm() (bloqué par les iframes)
+            pendingDeleteId = id;
+            document.getElementById('confirmDeleteText').innerHTML =
+                `Êtes-vous sûr de vouloir supprimer "<strong>${title}</strong>" ?`;
+            showModal(document.getElementById('confirmDeleteModal'));
         }
+
+        // Gestion des boutons de confirmation
+        document.getElementById('confirmDeleteYes').addEventListener('click', () => {
+            hideModal(document.getElementById('confirmDeleteModal'));
+            if (pendingDeleteId) {
+                deleteVideo(pendingDeleteId);
+                pendingDeleteId = null;
+            }
+        });
+
+        document.getElementById('confirmDeleteNo').addEventListener('click', () => {
+            hideModal(document.getElementById('confirmDeleteModal'));
+            pendingDeleteId = null;
+        });
 
         async function deleteVideo(id) {
             try {
@@ -1018,9 +988,8 @@
         keywordFilter.addEventListener('change', filterAndDisplayVideos);
         modalCloseButton.addEventListener('click', () => hideModal(messageModal));
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadThemes();
-            await loadVideosFromSupabase();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideosFromSupabase();
         });
     </script>
 </body>
