@@ -123,13 +123,35 @@ app.get('/api/youtube-info/:videoId', async (req, res) => {
   }
 });
 
-// 5. Generate Summary (VERSION STABLE TEXTE)
+// 5. Generate Summary (VERSION AVANCÉE AVEC THÉMATIQUES)
 app.post('/api/generate-summary', async (req, res) => {
   const { title, description } = req.body;
-  if (!GEMINI_API_KEY) return res.json({ summary: "Résumé indisponible (Clé manquante)" });
+  if (!GEMINI_API_KEY) return res.json({ summary: "Résumé indisponible (Clé manquante)", keywords: [], themeId: null });
 
   try {
-    const prompt = `Résume cette vidéo de façon académique en Français (max 3 phrases) et donne 5 mots-clés séparés par des virgules à la fin (Format: Résumé... Mots-clés: A, B, C).
+    const themesList = `
+      - Intelligence Artificielle (ID: 238e42e7-4d16-4a2b-b7b8-a1e06a07382e)
+      - Neurosciences (ID: 915b4ece-6f8a-4bb2-897c-ce759cfc09af)
+      - Philosophie de l'esprit (ID: 4dc2da59-8540-48e7-a68d-4a285af5ea2d)
+      - Linguistique (ID: ea31575f-1752-40be-9ba6-1a181facf05a)
+      - Psychologie Cognitive (ID: 1e820095-12ac-4ad3-b149-6560deb6367a)
+      - Sciences Cognitives (ID: 8a47249a-9370-4817-b035-cfbb786422d1)
+      - Éthique & Société (ID: 3b5c5746-058f-47a9-a5f4-cb72b414846b)
+      - Autre (ID: 69287883-3c79-4624-8b2b-bb5bced474dd)
+    `;
+
+    const prompt = `Agis en tant qu'expert en sciences cognitives. Analyse cette vidéo YouTube et génère :
+        1. Un résumé académique en Français (max 3 phrases).
+        2. Une liste de 5 mots-clés pertinents.
+        3. Choisis la thématique la plus appropriée parmi cette liste exclusivement : 
+        ${themesList}
+
+        Format de réponse strict :
+        Résumé: [Ton résumé]
+        Mots-clés: [Mot1, Mot2, Mot3, Mot4, Mot5]
+        ThemeID: [ID de la thématique choisie]
+
+        Contenu à analyser :
         Titre: ${title}
         Description: ${description}`;
 
@@ -140,17 +162,20 @@ app.post('/api/generate-summary', async (req, res) => {
 
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    // Parsing basique du texte retourné
-    let summary = text;
+    // Parsing avancé
+    let summary = "";
     let keywords = [];
+    let themeId = null;
 
-    if (text.includes('Mots-clés:')) {
-      const parts = text.split('Mots-clés:');
-      summary = parts[0].trim();
-      keywords = parts[1].split(',').map(k => k.trim());
-    }
+    const summaryMatch = text.match(/Résumé:\s*([\s\S]*?)(?=Mots-clés:|$)/i);
+    const keywordsMatch = text.match(/Mots-clés:\s*([\s\S]*?)(?=ThemeID:|$)/i);
+    const themeMatch = text.match(/ThemeID:\s*([a-z0-9-]{36})/i);
 
-    res.json({ summary, keywords });
+    if (summaryMatch) summary = summaryMatch[1].trim();
+    if (keywordsMatch) keywords = keywordsMatch[1].split(',').map(k => k.trim());
+    if (themeMatch) themeId = themeMatch[1].trim();
+
+    res.json({ summary, keywords, themeId });
   } catch (err) {
     console.error("Gemini Error:", err.response?.data || err.message);
     res.status(500).json({ error: "Erreur génération résumé" });

@@ -454,6 +454,12 @@
             <input type="text" id="videoKeywordsInput" placeholder="IA, Cognition, Neurosciences, Philosophie...">
             <p class="help-text">Les mots-clés apparaîtront dans le filtre et sur les cartes</p>
 
+            <label for="videoThemeSelect">Thématique :</label>
+            <select id="videoThemeSelect">
+                <option value="">Sélectionnez un thème...</option>
+            </select>
+            <p class="help-text">Classification thématique (peut être suggérée par l'IA)</p>
+
             <label for="videoAiSummaryInput">Résumé (généré par IA) :</label>
             <textarea id="videoAiSummaryInput"
                 placeholder="Collez ici le résumé généré par l'IA ou décrivez le contenu de la vidéo..."></textarea>
@@ -580,65 +586,88 @@
         }
 
         // ============================================
-        // RÉCUPÉRATION MÉTADONNÉES YOUTUBE (oEmbed API)
+        // RÉCUPÉRATION MÉTADONNÉES AVANCÉE (YouTube + Gemini)
         // ============================================
-        async function fetchYoutubeMetadata(url) {
-            const videoId = getYouTubeVideoId(url);
-            if (!videoId) {
-                throw new Error('URL YouTube invalide');
-            }
-
+        async function loadThemesForSelect() {
             try {
-                // Utilise l'API oEmbed de YouTube (pas besoin de clé API)
-                const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-                const response = await fetch(oembedUrl);
-
-                if (!response.ok) {
-                    throw new Error('Vidéo non trouvée ou privée');
-                }
-
-                const data = await response.json();
-
-                return {
-                    title: data.title || '',
-                    uploader: data.author_name || '',
-                    thumbnailUrl: data.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-                };
-            } catch (error) {
-                console.error('Erreur fetch oEmbed:', error);
-                throw new Error('Impossible de récupérer les informations de la vidéo');
-            }
+                const { data, error } = await supabaseClient.from('themes').select('*').order('name');
+                if (error) throw error;
+                const select = document.getElementById('videoThemeSelect');
+                select.innerHTML = '<option value="">Sélectionnez un thème...</option>';
+                data.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = t.name;
+                    select.appendChild(opt);
+                });
+            } catch (err) { console.error('Erreur thèmes:', err); }
         }
 
-        // Bouton "Récupérer" les infos YouTube
+        // Bouton "Récupérer" les infos (Logic Avancée)
         document.getElementById('fetchYoutubeInfoBtn').addEventListener('click', async () => {
             const url = document.getElementById('youtubeVideoUrl').value.trim();
+            const videoId = getYouTubeVideoId(url);
 
-            if (!url) {
-                showUserMessage('Veuillez d\'abord coller une URL YouTube.');
+            if (!videoId) {
+                showUserMessage('Veuillez coller une URL YouTube valide.');
                 return;
             }
 
-            // Affiche le spinner
+            // UI State
             document.getElementById('fetchBtnText').classList.add('hidden');
             document.getElementById('fetchBtnSpinner').classList.remove('hidden');
+            document.getElementById('fetchYoutubeInfoBtn').disabled = true;
 
             try {
-                const metadata = await fetchYoutubeMetadata(url);
+                updateStatus('loading', 'Appel API YouTube...');
 
-                // Remplit automatiquement les champs
-                document.getElementById('videoTitleInput').value = metadata.title;
-                document.getElementById('videoUploaderInput').value = metadata.uploader;
+                // 1. Récupérer les infos YouTube via le backend (pour avoir la description complète)
+                const ytResponse = await fetch(`/api/youtube-info/${videoId}`);
+                if (!ytResponse.ok) throw new Error('Erreur API YouTube Backend');
+                const ytData = await ytResponse.json();
 
-                showUserMessage(`✅ Informations récupérées !\n\nTitre: ${metadata.title}\nChaîne: ${metadata.uploader}`);
+                // Remplissage immédiat
+                document.getElementById('videoTitleInput').value = ytData.title;
+                document.getElementById('videoUploaderInput').value = ytData.channelTitle;
+                document.getElementById('originalDescriptionInput').value = ytData.description;
+
+                updateStatus('loading', 'IA en cours de réflexion...');
+
+                // 2. Appeler le backend pour le résumé Gemini, les mots-clés et le thème
+                const aiResponse = await fetch('/api/generate-summary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: ytData.title, description: ytData.description })
+                });
+
+                if (aiResponse.ok) {
+                    const aiData = await aiResponse.json();
+                    document.getElementById('videoAiSummaryInput').value = aiData.summary;
+                    document.getElementById('videoKeywordsInput').value = aiData.keywords.join(', ');
+                    if (aiData.themeId) {
+                        document.getElementById('videoThemeSelect').value = aiData.themeId;
+                    }
+                    showStatusBadge('IA a terminé !');
+                }
+
+                showUserMessage('✅ Informations récupérées avec succès par l\'IA !');
+
             } catch (error) {
+                console.error('Erreur récupération complète:', error);
                 showUserMessage('❌ ' + error.message);
             } finally {
-                // Cache le spinner
                 document.getElementById('fetchBtnText').classList.remove('hidden');
                 document.getElementById('fetchBtnSpinner').classList.add('hidden');
+                document.getElementById('fetchYoutubeInfoBtn').disabled = false;
+                await loadVideosFromSupabase(); // Pour remettre le badge status à jour
             }
         });
+
+        function showStatusBadge(text) {
+            const sb = document.getElementById('statusText');
+            sb.textContent = text;
+            setTimeout(() => { sb.textContent = currentVideos.length + ' vidéos'; }, 3000);
+        }
 
 
         // ============================================
@@ -860,11 +889,10 @@
             document.getElementById('videoTitleInput').value = '';
             document.getElementById('videoUploaderInput').value = '';
             document.getElementById('videoKeywordsInput').value = '';
-            document.getElementById('videoAiSummaryInput').value = '';
-            document.getElementById('adminCustomDescription').value = '';
-            document.getElementById('originalDescriptionInput').value = '';
+            document.getElementById('videoThemeSelect').value = '';
             document.getElementById('editingVideoId').value = '';
             document.getElementById('deleteVideoBtn').classList.add('hidden');
+            loadThemesForSelect(); // Recharger au cas où
             showModal(addYoutubeVideoModal);
         });
 
@@ -889,6 +917,8 @@
 
             try {
                 const keywords = keywordsStr.split(',').map(k => k.trim()).filter(Boolean);
+                const themeId = document.getElementById('videoThemeSelect').value;
+
                 const payload = {
                     youtube_video_id: ytId,
                     title,
@@ -898,6 +928,7 @@
                     admin_annotation: annotation,
                     original_description: originalDesc,
                     thumbnail_url: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+                    theme_id: themeId || null,
                     is_published: true
                 };
 
@@ -931,8 +962,10 @@
             document.getElementById('videoAiSummaryInput').value = v.aiSummary !== 'Aucun résumé disponible.' ? v.aiSummary : '';
             document.getElementById('adminCustomDescription').value = v.adminDescription !== 'Aucune annotation.' ? v.adminDescription : '';
             document.getElementById('originalDescriptionInput').value = v.originalDescription !== 'Aucune description originale.' ? v.originalDescription : '';
+            document.getElementById('videoThemeSelect').value = v.theme?.id || '';
             document.getElementById('editingVideoId').value = v.id;
             document.getElementById('deleteVideoBtn').classList.remove('hidden');
+            loadThemesForSelect();
             showModal(addYoutubeVideoModal);
         }
 
@@ -990,6 +1023,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadVideosFromSupabase();
+            loadThemesForSelect();
         });
     </script>
 </body>
