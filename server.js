@@ -20,11 +20,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://okopmosonqolgnfgabxf.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rb3Btb3NvbnFvbGduZmdhYnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3Njk2MzIsImV4cCI6MjA4NDM0NTYzMn0.ji9VGjPvEAA3cVevQEKO0j5Ljada_fAsaUBTEhgBp1U';
-const SUPABASE_SECRET = process.env.SUPABASE_SECRET || SUPABASE_KEY;
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyB5uWj6NN5kwr24i0IYZWPmq24QmVJs4oY';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyB5uWj6NN5kwr24i0IYZWPmq24QmVJs4oY';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const SUPABASE_SECRET = process.env.SUPABASE_SECRET || process.env.SUPABASE_KEY;
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 // Ne plus bloquer le démarrage si les clés sont hardcodées
 if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -124,10 +124,10 @@ app.get('/api/youtube-info/:videoId', async (req, res) => {
   }
 });
 
-// 5. Generate Summary (VERSION AVANCÉE AVEC THÉMATIQUES)
+// 5. Generate Summary (VERSION GROQ - LLAMA 3 - AVEC THÉMATIQUES)
 app.post('/api/generate-summary', async (req, res) => {
   const { title, description } = req.body;
-  if (!GEMINI_API_KEY) return res.json({ summary: "Résumé indisponible (Clé manquante)", keywords: [], themeId: null });
+  if (!GROQ_API_KEY) return res.json({ summary: "Résumé indisponible (Clé manquante)", keywords: [], themeId: null });
 
   try {
     const themesList = `
@@ -141,30 +141,35 @@ app.post('/api/generate-summary', async (req, res) => {
       - Autre (ID: 69287883-3c79-4624-8b2b-bb5bced474dd)
     `;
 
-    const prompt = `Agis en tant qu'expert en sciences cognitives. Analyse cette vidéo YouTube et génère :
-        1. Un résumé académique en Français (max 3 phrases).
-        2. Une liste de 5 mots-clés pertinents.
-        3. Choisis la thématique la plus appropriée parmi cette liste exclusivement : 
-        ${themesList}
+    const prompt = `Tu es une IA experte en indexation vidéo pour un institut de recherche académique.
+    Tâche : Analyse le titre et la description et génère :
+    1. Un résumé académique en Français concis (max 3 phrases).
+    2. Une liste de 5 mots-clés pertinents (séparés par des virgules).
+    3. Choisis la thématique la plus appropriée parmi cette liste exclusivement : ${themesList}
 
-        Format de réponse strict :
-        Résumé: [Ton résumé]
-        Mots-clés: [Mot1, Mot2, Mot3, Mot4, Mot5]
-        ThemeID: [ID de la thématique choisie]
+    Format de sortie strict :
+    Résumé: [Ton résumé ici]
+    Mots-clés: [Mot1, Mot2, Mot3, Mot4, Mot5]
+    ThemeID: [ID de la thématique choisie]
 
-        Contenu à analyser :
-        Titre: ${title}
-        Description: ${description}`;
+    Titre: ${title}
+    Description: ${description}`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    const response = await axios.post(url, {
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = response.data?.choices?.[0]?.message?.content || "";
 
-    // Parsing avancé
-    let summary = "";
+    // Parsing robuste
+    let summary = "Résumé non généré.";
     let keywords = [];
     let themeId = null;
 
@@ -173,13 +178,17 @@ app.post('/api/generate-summary', async (req, res) => {
     const themeMatch = text.match(/ThemeID:\s*([a-z0-9-]{36})/i);
 
     if (summaryMatch) summary = summaryMatch[1].trim();
-    if (keywordsMatch) keywords = keywordsMatch[1].split(',').map(k => k.trim());
+    if (keywordsMatch) {
+      keywords = keywordsMatch[1].split(',')
+        .map(k => k.trim().replace(/\.$/, ''))
+        .filter(k => k.length > 0);
+    }
     if (themeMatch) themeId = themeMatch[1].trim();
 
     res.json({ summary, keywords, themeId });
   } catch (err) {
-    console.error("Gemini Error:", err.response?.data || err.message);
-    res.status(500).json({ error: "Erreur génération résumé" });
+    console.error("Groq Error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Erreur génération résumé (Groq)" });
   }
 });
 
@@ -214,6 +223,6 @@ app.delete('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
 });
 
 // Fallback
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html'))); // Corrigé: index.html
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.listen(PORT, () => console.log(`Serveur restauré sur port ${PORT}`));
