@@ -340,9 +340,7 @@
                     <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src=""
                         title="YouTube video player" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation allow-presentation"
-                        allowfullscreen></iframe>
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
 
                 <div class="video-info p-6 mt-4 rounded-lg shadow-lg">
@@ -808,7 +806,7 @@
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            mainVideoPlayerIframe.src = `https://www.youtube-nocookie.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0`;
+            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0`;
 
             videoTitleElem.textContent = v.title;
             videoUploaderElem.textContent = v.uploader;
