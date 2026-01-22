@@ -806,7 +806,7 @@
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0`;
+            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 
             videoTitleElem.textContent = v.title;
             videoUploaderElem.textContent = v.uploader;

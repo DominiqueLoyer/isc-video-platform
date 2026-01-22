@@ -145,7 +145,9 @@ app.post('/api/generate-summary', async (req, res) => {
     Tâche : Analyse le titre et la description et génère :
     1. Un résumé académique en Français concis (max 3 phrases).
     2. Une liste de 5 mots-clés pertinents (séparés par des virgules).
-    3. Choisis la thématique la plus appropriée parmi cette liste exclusivement : ${themesList}
+    3. Choisis la thématique la plus appropriée parmi cette liste exclusivement (copie l'ID exact) : ${themesList}
+
+    IMPORTANT : Ne donne AUCUNE introduction ni conclusion. Donne UNIQUEMENT le bloc suivant :
 
     Format de sortie strict :
     Résumé: [Ton résumé ici]
@@ -158,7 +160,7 @@ app.post('/api/generate-summary', async (req, res) => {
     const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3
+      temperature: 0.1
     }, {
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
