@@ -23,8 +23,8 @@ const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://okopmosonqolgnfgabxf.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rb3Btb3NvbnFvbGduZmdhYnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3Njk2MzIsImV4cCI6MjA4NDM0NTYzMn0.ji9VGjPvEAA3cVevQEKO0j5Ljada_fAsaUBTEhgBp1U';
 const SUPABASE_SECRET = process.env.SUPABASE_SECRET || SUPABASE_KEY;
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyB5uWj6NN5kwr24i0IYZWPmq24QmVJs4oY';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyB5uWj6NN5kwr24i0IYZWPmq24QmVJs4oY';
 
 // Ne plus bloquer le démarrage si les clés sont hardcodées
 if (!SUPABASE_URL || !SUPABASE_KEY) {
