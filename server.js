@@ -169,6 +169,7 @@ app.post('/api/generate-summary', async (req, res) => {
     });
 
     const text = response.data?.choices?.[0]?.message?.content || "";
+    console.log("Groq Raw Content:", text);
 
     // Parsing robuste
     let summary = "Résumé non généré.";

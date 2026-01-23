@@ -119,6 +119,38 @@
             background-color: var(--uqam-light-blue);
         }
 
+        .share-x {
+            background-color: #000000;
+        }
+
+        .share-reddit {
+            background-color: #FF4500;
+        }
+
+        .share-bluesky {
+            background-color: #1185FE;
+        }
+
+        .share-discord {
+            background-color: #5865F2;
+        }
+
+        .share-obsidian {
+            background-color: #7C3AED;
+        }
+
+        .share-notion {
+            background-color: #000000;
+        }
+
+        .share-instagram {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .share-tiktok {
+            background-color: #000000;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -266,6 +298,40 @@
             border-radius: 0 8px 8px 0;
         }
 
+        /* Thématiques colorées */
+        .theme-filter-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            color: white;
+        }
+
+        .theme-filter-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-filter-btn.active {
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            z-index: 10;
+        }
+
         .help-text {
             font-size: 0.75rem;
             color: #666;
@@ -318,6 +384,16 @@
         </div>
     </header>
 
+    <!-- Filtres par thématiques colorées -->
+    <div class="bg-gray-200 py-3 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div id="themeFiltersContainer" class="flex flex-wrap gap-2 items-center justify-center">
+                <span class="text-gray-600 text-sm font-medium mr-2">Thématiques:</span>
+                <!-- Les boutons seront générés dynamiquement -->
+            </div>
+        </div>
+    </div>
+
     <main id="mainContent" class="container mx-auto p-4">
         <section id="videoGridPage">
             <div class="flex justify-between items-center mb-6">
@@ -340,7 +416,7 @@
                     <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src=""
                         title="YouTube video player" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
                 </div>
 
                 <div class="video-info p-6 mt-4 rounded-lg shadow-lg">
@@ -378,18 +454,30 @@
                     <div class="border-t pt-4">
                         <h3 class="text-lg font-semibold mb-3 text-gray-700">Partager :</h3>
                         <div id="shareButtonsContainer" class="flex flex-wrap">
-                            <a href="#" id="shareFacebook" target="_blank" class="share-button share-facebook"><i
-                                    class="fab fa-facebook-f"></i> Facebook</a>
-                            <a href="#" id="shareTwitter" target="_blank" class="share-button share-twitter"><i
-                                    class="fab fa-twitter"></i> Twitter</a>
-                            <a href="#" id="shareLinkedIn" target="_blank" class="share-button share-linkedin"><i
-                                    class="fab fa-linkedin-in"></i> LinkedIn</a>
-                            <a href="#" id="shareWhatsApp" target="_blank" class="share-button share-whatsapp"><i
-                                    class="fab fa-whatsapp"></i> WhatsApp</a>
-                            <a href="#" id="shareTelegram" target="_blank" class="share-button share-telegram"><i
-                                    class="fab fa-telegram-plane"></i> Telegram</a>
-                            <a href="#" id="shareEmail" class="share-button share-email"><i class="fas fa-envelope"></i>
-                                Email</a>
+                            <a href="#" data-network="facebook" target="_blank"
+                                class="share-link share-button share-facebook"><i class="fab fa-facebook-f"></i>
+                                Facebook</a>
+                            <a href="#" data-network="x" target="_blank" class="share-link share-button share-x"><i
+                                    class="fab fa-x-twitter"></i> X</a>
+                            <a href="#" data-network="linkedin" target="_blank"
+                                class="share-link share-button share-linkedin"><i class="fab fa-linkedin-in"></i>
+                                LinkedIn</a>
+                            <a href="#" data-network="reddit" target="_blank"
+                                class="share-link share-button share-reddit"><i class="fab fa-reddit-alien"></i>
+                                Reddit</a>
+                            <a href="#" data-network="bluesky" target="_blank"
+                                class="share-link share-button share-bluesky"><i class="fas fa-cloud"></i> Bluesky</a>
+                            <a href="#" data-network="discord" target="_blank"
+                                class="share-link share-button share-discord"><i class="fab fa-discord"></i> Discord</a>
+                            <a href="#" data-network="obsidian" target="_blank"
+                                class="share-link share-button share-obsidian"><i class="fas fa-gem"></i> Obsidian</a>
+                            <a href="#" data-network="notion" target="_blank"
+                                class="share-link share-button share-notion"><i class="fas fa-file-alt"></i> Notion</a>
+                            <a href="#" data-network="instagram" target="_blank"
+                                class="share-link share-button share-instagram"><i class="fab fa-instagram"></i>
+                                Instagram</a>
+                            <a href="#" data-network="tiktok" target="_blank"
+                                class="share-link share-button share-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
                             <button id="copyLinkButton" class="share-button share-copy"><i class="fas fa-link"></i>
                                 Copier lien</button>
                         </div>
@@ -399,8 +487,14 @@
         </section>
     </main>
 
-    <footer class="text-center p-4 mt-8 text-gray-600 border-t border-gray-300">
-        © 2025 Développement par Dominique S. Loyer, assistant de recherche ISC. Tous droits réservés.
+    <footer class="header-bg text-white p-6 mt-8 text-center shadow-md">
+        <div class="container mx-auto">
+            <p>
+                Creation <img src="peace.png" alt="Peace"
+                    style="height: 24px; vertical-align: middle; display: inline-block; filter: brightness(0) invert(1);">
+                Dominique Loyer, Assistant de recherche à l'institut des sciences cognitives de l'UQAM MMXXVI
+            </p>
+        </div>
     </footer>
 
     <div id="statusBadge" class="status-badge status-loading">
@@ -603,6 +697,68 @@
             } catch (err) { console.error('Erreur thèmes:', err); }
         }
 
+        // Variable pour le filtre thématique
+        let selectedThemeId = null;
+        let allThemes = [];
+
+        // Couleurs par thème (correspond aux IDs dans Supabase)
+        const themeColors = {
+            '238e42e7-4d16-4a2b-b7b8-a1e06a07382e': '#9333EA', // Intelligence Artificielle - violet
+            '915b4ece-6f8a-4bb2-897c-ce759cfc09af': '#059669', // Neurosciences - vert
+            '4dc2da59-8540-48e7-a68d-4a285af5ea2d': '#DC2626', // Philosophie de l'esprit - rouge
+            'ea31575f-1752-40be-9ba6-1a181facf05a': '#D97706', // Linguistique - orange
+            '1e820095-12ac-4ad3-b149-6560deb6367a': '#2563EB', // Psychologie Cognitive - bleu
+            '8a47249a-9370-4817-b035-cfbb786422d1': '#7C3AED', // Sciences Cognitives - indigo
+            '3b5c5746-058f-47a9-a5f4-cb72b414846b': '#DB2777', // Éthique & Société - rose
+            '69287883-3c79-4624-8b2b-bb5bced474dd': '#6B7280'  // Autre - gris
+        };
+
+        // Charger les boutons de filtre thématiques
+        async function loadThemeFilters() {
+            try {
+                const { data, error } = await supabaseClient.from('themes').select('*').order('name');
+                if (error) throw error;
+                allThemes = data;
+
+                const container = document.getElementById('themeFiltersContainer');
+                container.innerHTML = '<span class="text-gray-600 text-sm font-medium mr-2">Thématiques:</span>';
+
+                // Bouton "Tous"
+                const allBtn = document.createElement('button');
+                allBtn.className = 'theme-filter-btn' + (selectedThemeId === null ? ' active' : '');
+                allBtn.style.backgroundColor = '#003366';
+                allBtn.innerHTML = '<i class="fas fa-th-large mr-1"></i>Tous';
+                allBtn.onclick = () => { selectedThemeId = null; updateThemeFilterUI(); filterAndDisplayVideos(); };
+                container.appendChild(allBtn);
+
+                // Boutons par thème
+                data.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.className = 'theme-filter-btn' + (selectedThemeId === t.id ? ' active' : '');
+                    btn.style.backgroundColor = themeColors[t.id] || t.color || '#6B7280';
+                    btn.textContent = t.name;
+                    btn.onclick = () => { selectedThemeId = t.id; updateThemeFilterUI(); filterAndDisplayVideos(); };
+                    container.appendChild(btn);
+                });
+            } catch (err) { console.error('Erreur chargement thèmes:', err); }
+        }
+
+        function updateThemeFilterUI() {
+            const btns = document.querySelectorAll('#themeFiltersContainer .theme-filter-btn');
+            btns.forEach((btn, i) => {
+                if (i === 0) { // Bouton "Tous"
+                    btn.classList.toggle('active', selectedThemeId === null);
+                } else {
+                    const themeId = allThemes[i - 1]?.id;
+                    btn.classList.toggle('active', selectedThemeId === themeId);
+                }
+            });
+        }
+
+        function getThemeColor(themeId) {
+            return themeColors[themeId] || '#6B7280';
+        }
+
         // Bouton "Récupérer" les infos (Logic Avancée)
         document.getElementById('fetchYoutubeInfoBtn').addEventListener('click', async () => {
             const url = document.getElementById('youtubeVideoUrl').value.trim();
@@ -694,7 +850,8 @@
                     aiSummary: v.ai_summary || 'Aucun résumé disponible.',
                     keywords: v.keywords || [],
                     adminDescription: v.admin_annotation || 'Aucune annotation.',
-                    originalDescription: v.original_description || 'Aucune description originale.'
+                    originalDescription: v.original_description || 'Aucune description originale.',
+                    themeId: v.theme_id
                 }));
 
                 updateStatus('connected', `${currentVideos.length} vidéos`);
@@ -743,7 +900,8 @@
                     v.keywords.some(kw => kw.toLowerCase().includes(searchTerm))
                 );
                 const matchesKeyword = !selectedKeyword || v.keywords.includes(selectedKeyword);
-                return matchesSearch && matchesKeyword;
+                const matchesTheme = !selectedThemeId || v.themeId === selectedThemeId;
+                return matchesSearch && matchesKeyword && matchesTheme;
             });
 
             displayVideos(filtered);
@@ -766,8 +924,15 @@
                 const thumbnailUrl = getThumbnailUrl(v.youtubeVideoId);
                 const keywordsHtml = v.keywords.slice(0, 5).map(kw => `<span class="keyword-tag">${kw}</span>`).join('');
 
+                // Badge thématique coloré
+                const themeName = allThemes.find(t => t.id === v.themeId)?.name || '';
+                const themeColor = getThemeColor(v.themeId);
+                const themeBadgeHtml = v.themeId && themeName ?
+                    `<span class="theme-badge" style="background-color: ${themeColor}">${themeName}</span>` : '';
+
                 card.innerHTML = `
                     <div class="video-thumbnail-container">
+                        ${themeBadgeHtml}
                         <img src="${thumbnailUrl}" alt="${v.title}" loading="lazy" onerror="this.src='https://placehold.co/400x300/003366/ffffff?text=Vidéo'">
                     </div>
                     <div class="p-4 flex-grow flex flex-col">
@@ -806,7 +971,7 @@
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+            mainVideoPlayerIframe.src = `https://www.youtube-nocookie.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 
             videoTitleElem.textContent = v.title;
             videoUploaderElem.textContent = v.uploader;
@@ -821,15 +986,30 @@
 
             // URLs de partage
             const pageUrl = encodeURIComponent(window.location.href.split('#')[0] + '#video=' + v.id);
-            const shareText = encodeURIComponent(v.title);
+            const pageTitle = encodeURIComponent(v.title);
             const youtubeUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${v.youtubeVideoId}`);
 
-            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
-            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`;
-            document.getElementById('shareLinkedIn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
-            document.getElementById('shareWhatsApp').href = `https://wa.me/?text=${shareText}%20${pageUrl}`;
-            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${pageUrl}&text=${shareText}`;
-            document.getElementById('shareEmail').href = `mailto:?subject=${shareText}&body=Regardez%20cette%20vid%C3%A9o%3A%20${pageUrl}`;
+            // Mapping des réseaux vers leurs URLs de partage
+            const shareUrls = {
+                facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+                x: `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`,
+                linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`,
+                reddit: `https://www.reddit.com/submit?url=${pageUrl}&title=${pageTitle}`,
+                bluesky: `https://bsky.app/intent/compose?text=${pageTitle}%20${pageUrl}`,
+                discord: `https://discord.com/channels/@me`,
+                obsidian: `obsidian://new?content=${pageTitle}%0A${decodeURIComponent(pageUrl)}`,
+                notion: `https://www.notion.so/new`,
+                instagram: `https://www.instagram.com`,
+                tiktok: `https://www.tiktok.com`
+            };
+
+            // Appliquer les URLs aux boutons
+            document.querySelectorAll('.share-link').forEach(link => {
+                const network = link.dataset.network;
+                if (shareUrls[network]) {
+                    link.href = shareUrls[network];
+                }
+            });
 
             document.getElementById('copyLinkButton').onclick = () => {
                 navigator.clipboard.writeText(decodeURIComponent(pageUrl));
@@ -1024,6 +1204,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadVideosFromSupabase();
             loadThemesForSelect();
+            loadThemeFilters();
         });
     </script>
 </body>
