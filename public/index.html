@@ -412,11 +412,19 @@
                 <button onclick="showHomePage(); return false;" class="button-primary mb-4 py-2 px-4 rounded-md"><i
                         class="fas fa-arrow-left mr-2"></i>Retour</button>
 
-                <div class="video-player-container rounded-lg shadow-xl overflow-hidden">
-                    <iframe id="mainVideoPlayerIframe" width="100%" class="aspect-video" src=""
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                <div id="videoPlayerContainer"
+                    class="video-player-container rounded-lg shadow-xl overflow-hidden relative group cursor-pointer bg-black">
+                    <!-- Facade (Miniature + Bouton Play) -->
+                    <div id="videoFacade" class="absolute inset-0 z-10 flex items-center justify-center bg-black">
+                        <img id="facadeThumbnail" src="" alt="Video Thumbnail"
+                            class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-300">
+                        <button
+                            class="absolute z-20 bg-red-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-play text-3xl ml-1"></i>
+                        </button>
+                    </div>
+                    <!-- Iframe (chargée au clic) -->
+                    <div id="iframeContainer" class="w-full aspect-video"></div>
                 </div>
 
                 <div class="video-info p-6 mt-4 rounded-lg shadow-lg">
@@ -614,7 +622,13 @@
         const ADMIN_PASSWORD = 'Isc2025_plateforme';
 
         const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: false, // Nécessaire pour éviter l'erreur "LockManager" sur Tor
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            }
+        });
 
         // ============================================
         // VARIABLES GLOBALES
@@ -969,11 +983,43 @@
         // ============================================
         // LECTEUR VIDÉO & PARTAGE
         // ============================================
+        // ============================================
+        // LECTEUR VIDÉO & PARTAGE (FACADE CLICK-TO-LOAD)
+        // ============================================
         function showVideoPlayer(v) {
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+            // Reset du lecteur (affiche la façade, cache l'iframe)
+            const playerContainer = document.getElementById('videoPlayerContainer');
+            const facade = document.getElementById('videoFacade');
+            const iframeContainer = document.getElementById('iframeContainer');
+            const thumbnail = document.getElementById('facadeThumbnail');
+
+            iframeContainer.innerHTML = ''; // Vide l'iframe précédente
+            facade.classList.remove('hidden'); // Montre la façade
+
+            // Charge la miniature haute qualité
+            const hqThumbnail = `https://i.ytimg.com/vi/${v.youtubeVideoId}/maxresdefault.jpg`;
+            const mqThumbnail = `https://i.ytimg.com/vi/${v.youtubeVideoId}/hqdefault.jpg`;
+
+            // Tente de charger maxres, fallback sur hq si échec (géré par onerror)
+            thumbnail.src = hqThumbnail;
+            thumbnail.onerror = () => { thumbnail.src = mqThumbnail; };
+
+            // Setup du clic pour lancer la vidéo
+            playerContainer.onclick = () => {
+                facade.classList.add('hidden'); // Cache la façade
+                // Injecte l'iframe avec autoplay=1
+                iframeContainer.innerHTML = `
+                    <iframe width="100%" class="aspect-video" 
+                        src="https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+                        title="${v.title}" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>`;
+                playerContainer.onclick = null; // Retire l'event listener pour éviter les doubles clics
+            };
 
             videoTitleElem.textContent = v.title;
             videoUploaderElem.textContent = v.uploader;
