@@ -245,4 +245,4 @@ app.delete('/api/admin/videos/:id', verifyAdmin, async (req, res) => {
 // Fallback
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(PORT, () => console.log(`Serveur restauré sur port ${PORT}`));
+app.listen(PORT, () => console.log(`Serveur restauré sur port ${PORT} - Force Reload ${new Date().toISOString()}`));
