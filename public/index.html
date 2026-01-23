@@ -346,8 +346,8 @@
 
     <header class="header-bg text-white p-4 shadow-md">
         <div class="container mx-auto flex flex-wrap items-center justify-between">
-            <a href="#" onclick="showHomePage(); return false;" class="text-xl sm:text-2xl font-bold">Plateforme de
-                diffusion de l'institut des sciences cognitives</a>
+            <a href="#" onclick="showHomePage(); return false;" class="text-xl sm:text-2xl font-bold flex items-center">
+                <i class="fas fa-brain mr-2"></i>Plateforme de diffusion de l'institut des sciences cognitives</a>
 
             <div
                 class="w-full md:w-auto mt-4 md:mt-0 flex flex-col md:flex-row items-center md:ml-auto space-y-2 md:space-y-0 md:space-x-2">
@@ -490,8 +490,10 @@
     <footer class="header-bg text-white p-6 mt-8 text-center shadow-md">
         <div class="container mx-auto">
             <p>
-                Création <img src="peace.png" alt="Peace"
-                    style="height: 24px; vertical-align: middle; display: inline-block; filter: brightness(0) invert(1);">
+                Création <a href="https://github.com/DominiqueLoyer" target="_blank" rel="noopener"
+                    title="GitHub DominiqueLoyer"><img src="peace.png" alt="Peace"
+                        style="height: 24px; vertical-align: middle; display: inline-block; filter: brightness(0) invert(1); cursor: pointer;"
+                        class="hover:opacity-80 transition-opacity"></a>
                 Dominique Loyer, Assistant de recherche à l'institut des sciences cognitives de l'UQAM MMXXVI
             </p>
         </div>
@@ -971,7 +973,7 @@
             videoGridPage.classList.add('hidden');
             videoPlayerPage.classList.remove('hidden');
 
-            mainVideoPlayerIframe.src = `https://www.youtube-nocookie.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+            mainVideoPlayerIframe.src = `https://www.youtube.com/embed/${v.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
 
             videoTitleElem.textContent = v.title;
             videoUploaderElem.textContent = v.uploader;

@@ -145,14 +145,14 @@ app.post('/api/generate-summary', async (req, res) => {
     Tâche : Analyse le titre et la description et génère :
     1. Un résumé académique en Français concis (max 3 phrases).
     2. Une liste de 5 mots-clés pertinents (séparés par des virgules).
-    3. Choisis la thématique la plus appropriée parmi cette liste exclusivement (copie l'ID exact) : ${themesList}
+    3. Propose la thématique la plus appropriée (un seul nom court, ex: "Neurosciences", "Intelligence Artificielle", "Philosophie de l'esprit", "Linguistique", etc.).
 
     IMPORTANT : Ne donne AUCUNE introduction ni conclusion. Donne UNIQUEMENT le bloc suivant :
 
     Format de sortie strict :
     Résumé: [Ton résumé ici]
     Mots-clés: [Mot1, Mot2, Mot3, Mot4, Mot5]
-    ThemeID: [ID de la thématique choisie]
+    Thématique: [Nom de la thématique choisie]
 
     Titre: ${title}
     Description: ${description}`;
@@ -174,11 +174,11 @@ app.post('/api/generate-summary', async (req, res) => {
     // Parsing robuste
     let summary = "Résumé non généré.";
     let keywords = [];
-    let themeId = null;
+    let proposedTheme = "Autre";
 
     const summaryMatch = text.match(/Résumé:\s*([\s\S]*?)(?=Mots-clés:|$)/i);
-    const keywordsMatch = text.match(/Mots-clés:\s*([\s\S]*?)(?=ThemeID:|$)/i);
-    const themeMatch = text.match(/ThemeID:\s*([a-z0-9-]{36})/i);
+    const keywordsMatch = text.match(/Mots-clés:\s*([\s\S]*?)(?=Thématique:|$)/i);
+    const themeMatch = text.match(/Thématique:\s*([\s\S]*?)$/i);
 
     if (summaryMatch) summary = summaryMatch[1].trim();
     if (keywordsMatch) {
@@ -186,7 +186,24 @@ app.post('/api/generate-summary', async (req, res) => {
         .map(k => k.trim().replace(/\.$/, ''))
         .filter(k => k.length > 0);
     }
-    if (themeMatch) themeId = themeMatch[1].trim();
+    if (themeMatch) proposedTheme = themeMatch[1].trim();
+
+    // Trouver ou créer la thématique dans Supabase
+    let themeId = null;
+    try {
+      const { data: existingThemes } = await supabase.from('themes').select('id, name');
+      const theme = existingThemes?.find(t => t.name.toLowerCase() === proposedTheme.toLowerCase());
+
+      if (theme) {
+        themeId = theme.id;
+      } else {
+        // Créer un nouveau thème si n'existe pas
+        const { data: newTheme, error: createError } = await supabase.from('themes').insert([{ name: proposedTheme }]).select().single();
+        if (!createError && newTheme) themeId = newTheme.id;
+      }
+    } catch (dbErr) {
+      console.error("DB Theme Error:", dbErr);
+    }
 
     res.json({ summary, keywords, themeId });
   } catch (err) {

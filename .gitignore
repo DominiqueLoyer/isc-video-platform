@@ -4,3 +4,10 @@ node_modules/
 uploaded_image_*
 npm-debug.log
 .gemini/
+
+Auxilière de recherche Avril à juin ISC/
+mes paies/
+*.pdf
+*.docx
+*.xlsx
+*.txt
