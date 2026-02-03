@@ -1007,14 +1007,21 @@
         // ============================================
 
         // Charge l'iframe YouTube uniquement au clic (contourne la détection anti-bot)
+        // Utilise youtube-nocookie.com pour éviter les problèmes de cookies et de connexion
         function loadActualVideo(videoId) {
             const container = document.getElementById('videoPlayerContainer');
+            // Paramètres optimisés pour embed sans redirection vers YouTube:
+            // - youtube-nocookie.com: pas de cookies tiers, évite les demandes de connexion
+            // - enablejsapi=0: désactive l'API JS qui peut causer des conflits
+            // - origin: indique l'origine du site (requis par YouTube)
+            // - playsinline=1: lecture inline sur mobile
+            const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`;
             container.innerHTML = `
                 <iframe width="100%" class="aspect-video" 
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
-                    title="YouTube video player" frameborder="0"
+                    src="${embedUrl}" 
+                    title="YouTube video player" 
+                    frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
             `;
         }
