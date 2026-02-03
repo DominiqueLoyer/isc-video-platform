@@ -376,6 +376,58 @@
             transform: translate(-50%, -50%) scale(1.1);
             background: rgba(255, 0, 0, 1);
         }
+
+        /* Bouton d'aide */
+        .help-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--uqam-light-blue);
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .help-button:hover {
+            background-color: #286090;
+            transform: scale(1.1);
+        }
+
+        .help-modal-content {
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--uqam-light-blue);
+        }
+
+        .help-section h4 {
+            color: var(--uqam-dark-blue);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .help-section ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .help-section li {
+            margin-bottom: 6px;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
@@ -412,6 +464,9 @@
                 <!-- Admin -->
                 <div id="adminControlsContainer"
                     class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
+                    <button id="helpButton" class="help-button" title="Aide">
+                        <i class="fas fa-question"></i>
+                    </button>
                     <button id="adminLoginButton"
                         class="button-secondary font-semibold py-2 px-4 rounded-md w-full md:w-auto">Accès
                         Admin</button>
@@ -545,6 +600,79 @@
         <div class="modal-content text-center">
             <p id="modalMessageText" class="text-lg"></p>
             <button id="modalCloseButton" class="button-primary mt-4 py-2 px-6 rounded-md">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal d'aide -->
+    <div id="helpModal" class="modal-overlay hidden">
+        <div class="modal-content help-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold" style="color: var(--uqam-dark-blue);">
+                    <i class="fas fa-question-circle mr-2"></i>Aide - Plateforme Vidéo ISC
+                </h3>
+                <button id="closeHelpModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <div class="help-section">
+                <h4><i class="fas fa-search mr-2"></i>Rechercher des vidéos</h4>
+                <ul>
+                    <li><strong>Barre de recherche</strong> : Tapez un mot pour chercher dans les titres, résumés et mots-clés</li>
+                    <li><strong>Filtrer par mot-clé</strong> : Utilisez la liste déroulante pour filtrer par mot-clé spécifique</li>
+                    <li><strong>Filtrer par thématique</strong> : Cliquez sur les boutons colorés pour voir uniquement les vidéos d'une thématique</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h4><i class="fas fa-play-circle mr-2"></i>Regarder une vidéo</h4>
+                <ul>
+                    <li>Cliquez sur une carte vidéo pour ouvrir le lecteur</li>
+                    <li>Cliquez sur le bouton <strong>▶</strong> pour lancer la lecture</li>
+                    <li>Utilisez le bouton <strong>Retour</strong> pour revenir à la liste</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h4><i class="fas fa-share-alt mr-2"></i>Partager une vidéo</h4>
+                <ul>
+                    <li>Ouvrez une vidéo puis descendez jusqu'à la section "Partager"</li>
+                    <li>Cliquez sur le réseau social de votre choix</li>
+                    <li>Utilisez "Copier lien" pour partager l'URL directement</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h4><i class="fas fa-palette mr-2"></i>Les thématiques</h4>
+                <ul>
+                    <li>🟣 <strong>Intelligence Artificielle</strong> : IA, apprentissage automatique</li>
+                    <li>🟢 <strong>Neurosciences</strong> : Cerveau, imagerie cérébrale</li>
+                    <li>🔴 <strong>Philosophie de l'esprit</strong> : Conscience, cognition</li>
+                    <li>🟠 <strong>Linguistique</strong> : Langage, grammaire</li>
+                    <li>🔵 <strong>Psychologie Cognitive</strong> : Mémoire, attention</li>
+                    <li>🟣 <strong>Sciences Cognitives</strong> : Interdisciplinaire</li>
+                    <li>🌸 <strong>Éthique & Société</strong> : Impact sociétal</li>
+                </ul>
+            </div>
+
+            <div class="help-section" style="background-color: #e8f4fd; border-left-color: #003366;">
+                <h4><i class="fas fa-user-shield mr-2"></i>Accès Administrateur</h4>
+                <p class="text-sm text-gray-600 mb-2">Réservé à la direction de l'ISC pour gérer les vidéos.</p>
+                <ul>
+                    <li>Cliquez sur <strong>"Accès Admin"</strong> et entrez le mot de passe</li>
+                    <li>Vous pourrez ensuite ajouter, modifier ou supprimer des vidéos</li>
+                </ul>
+            </div>
+
+            <div class="text-center mt-6">
+                <a href="https://github.com/Isc-2025/isc-video-platform" target="_blank" 
+                   class="text-sm text-gray-500 hover:text-gray-700">
+                    <i class="fab fa-github mr-1"></i>Documentation technique sur GitHub
+                </a>
+            </div>
+
+            <div class="flex justify-end mt-4">
+                <button onclick="hideModal(document.getElementById('helpModal'))" 
+                        class="button-primary py-2 px-6 rounded-md">Fermer</button>
+            </div>
         </div>
     </div>
 
@@ -1294,6 +1422,14 @@
         searchInput.addEventListener('input', filterAndDisplayVideos);
         keywordFilter.addEventListener('change', filterAndDisplayVideos);
         modalCloseButton.addEventListener('click', () => hideModal(messageModal));
+
+        // Gestion du bouton d'aide
+        document.getElementById('helpButton').addEventListener('click', () => {
+            showModal(document.getElementById('helpModal'));
+        });
+        document.getElementById('closeHelpModal').addEventListener('click', () => {
+            hideModal(document.getElementById('helpModal'));
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('Initialisation de la plateforme ISC...');
