@@ -754,11 +754,20 @@
         // Charger les boutons de filtre thématiques
         async function loadThemeFilters() {
             try {
+                console.log('Chargement des filtres thématiques...');
                 const { data, error } = await supabaseClient.from('themes').select('*').order('name');
-                if (error) throw error;
-                allThemes = data;
+                if (error) {
+                    console.error('Erreur Supabase themes:', error);
+                    throw error;
+                }
+                console.log('Thèmes chargés:', data);
+                allThemes = data || [];
 
                 const container = document.getElementById('themeFiltersContainer');
+                if (!container) {
+                    console.error('Container themeFiltersContainer non trouvé');
+                    return;
+                }
                 container.innerHTML = '<span class="text-gray-600 text-sm font-medium mr-2">Thématiques:</span>';
 
                 // Bouton "Tous"
@@ -766,19 +775,35 @@
                 allBtn.className = 'theme-filter-btn' + (selectedThemeId === null ? ' active' : '');
                 allBtn.style.backgroundColor = '#003366';
                 allBtn.innerHTML = '<i class="fas fa-th-large mr-1"></i>Tous';
-                allBtn.onclick = () => { selectedThemeId = null; updateThemeFilterUI(); filterAndDisplayVideos(); };
+                allBtn.addEventListener('click', () => { 
+                    selectedThemeId = null; 
+                    updateThemeFilterUI(); 
+                    filterAndDisplayVideos(); 
+                });
                 container.appendChild(allBtn);
 
                 // Boutons par thème
-                data.forEach(t => {
+                (data || []).forEach(t => {
                     const btn = document.createElement('button');
                     btn.className = 'theme-filter-btn' + (selectedThemeId === t.id ? ' active' : '');
                     btn.style.backgroundColor = themeColors[t.id] || t.color || '#6B7280';
                     btn.textContent = t.name;
-                    btn.onclick = () => { selectedThemeId = t.id; updateThemeFilterUI(); filterAndDisplayVideos(); };
+                    btn.addEventListener('click', () => { 
+                        selectedThemeId = t.id; 
+                        updateThemeFilterUI(); 
+                        filterAndDisplayVideos(); 
+                    });
                     container.appendChild(btn);
                 });
-            } catch (err) { console.error('Erreur chargement thèmes:', err); }
+                console.log('Filtres thématiques chargés avec succès');
+            } catch (err) { 
+                console.error('Erreur chargement thèmes:', err); 
+                // Afficher un message d'erreur à l'utilisateur
+                const container = document.getElementById('themeFiltersContainer');
+                if (container) {
+                    container.innerHTML = '<span class="text-red-500 text-sm">Erreur de chargement des thèmes</span>';
+                }
+            }
         }
 
         function updateThemeFilterUI() {
@@ -1270,10 +1295,18 @@
         keywordFilter.addEventListener('change', filterAndDisplayVideos);
         modalCloseButton.addEventListener('click', () => hideModal(messageModal));
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadVideosFromSupabase();
-            loadThemesForSelect();
-            loadThemeFilters();
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Initialisation de la plateforme ISC...');
+            try {
+                // Charger les thèmes d'abord pour les filtres et les badges
+                await loadThemeFilters();
+                await loadThemesForSelect();
+                // Puis charger les vidéos
+                await loadVideosFromSupabase();
+                console.log('Plateforme initialisée avec succès');
+            } catch (err) {
+                console.error('Erreur d\'initialisation:', err);
+            }
         });
     </script>
 </body>
