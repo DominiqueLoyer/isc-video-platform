@@ -1168,7 +1168,7 @@
             // - enablejsapi=0: désactive l'API JS qui peut causer des conflits
             // - origin: indique l'origine du site (requis par YouTube)
             // - playsinline=1: lecture inline sur mobile
-            const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`;
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
             container.innerHTML = `
                 <iframe width="100%" class="aspect-video" 
                     src="${embedUrl}" 
