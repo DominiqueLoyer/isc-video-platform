@@ -1,14 +1,12 @@
 # Plateforme de Diffusion Vidéo - Institut des Sciences Cognitives (ISC-UQAM)
 
 [![Plateforme ISC](https://img.shields.io/badge/Plateforme%20ISC-plateforme--isc.uqam.ca-yellow)](https://plateforme-isc.uqam.ca)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19136152.svg)](https://doi.org/10.5281/zenodo.19136152)
 [![Version](https://img.shields.io/badge/version-v1.0.4-blue?logo=zenodo)](https://doi.org/10.5281/zenodo.19136152)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19136152.svg)](https://doi.org/10.5281/zenodo.19136152)
 [![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?logo=render)](https://isc-video-platform.onrender.com)
 [![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase)](https://supabase.com)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js)](https://nodejs.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![JavaScript](https://img.shields.io/badge/Frontend-JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![TailwindCSS](https://img.shields.io/badge/CSS-TailwindCSS-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
 
