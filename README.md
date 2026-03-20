@@ -1,6 +1,7 @@
 # Plateforme de Diffusion Vidéo - Institut des Sciences Cognitives (ISC-UQAM)
 
 [![Plateforme ISC](https://img.shields.io/badge/Plateforme%20ISC-plateforme--isc.uqam.ca-yellow)](https://plateforme-isc.uqam.ca)
+[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fzenodo.org%2Fapi%2Frecords%2F19136152&query=%24.metadata.version&label=version&color=blue&logo=zenodo)](https://doi.org/10.5281/zenodo.19136152)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19136152.svg)](https://doi.org/10.5281/zenodo.19136152)
 [![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?logo=render)](https://isc-video-platform.onrender.com)
 [![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase)](https://supabase.com)
